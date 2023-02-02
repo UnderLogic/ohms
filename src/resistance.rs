@@ -226,32 +226,35 @@ impl ops::Div<f32> for Resistance {
 
 /// Extension trait for simple short-hands for creating `Resistance` values from `u32` values.
 pub trait ExtU32 {
+    /// Creates a new `Resistance` from a number of whole milliohms (mΩ).
     fn milli_ohms(self) -> Resistance;
+
+    /// Creates a new `Resistance` from a number of whole ohms (Ω).
     fn ohms(self) -> Resistance;
+
+    /// Creates a new `Resistance` from a number of whole kilohms (kΩ).
     fn kilo_ohms(self) -> Resistance;
+
+    /// Creates a new `Resistance` from a number of whole megaohms (MΩ).
     fn mega_ohms(self) -> Resistance;
 }
 
 impl ExtU32 for u32 {
-    /// Creates a new `Resistance` from a number of whole milliohms (mΩ).
     #[inline]
     fn milli_ohms(self) -> Resistance {
         Resistance::from_milli_ohms(self)
     }
 
-    /// Creates a new `Resistance` from a number of whole ohms (Ω).
     #[inline]
     fn ohms(self) -> Resistance {
         Resistance::from_milli_ohms(self * 1_000)
     }
 
-    /// Creates a new `Resistance` from a number of whole kilohms (kΩ).
     #[inline]
     fn kilo_ohms(self) -> Resistance {
         Resistance::from_milli_ohms(self * 1_000_000)
     }
 
-    /// Creates a new `Resistance` from a number of whole megaohms (MΩ).
     #[inline]
     fn mega_ohms(self) -> Resistance {
         Resistance::from_milli_ohms(self * 1_000_000_000)
@@ -260,40 +263,43 @@ impl ExtU32 for u32 {
 
 /// Extension trait for simple short-hands for creating `Resistance` values from `f32` values.
 pub trait ExtF32 {
+    /// Creates a new `Resistance` from a number of fractional milliohms (mΩ).
+    ///
+    /// The fractional part is rounded down to the nearest whole milliohm (mΩ).
     fn milli_ohms(self) -> Resistance;
+
+    /// Creates a new `Resistance` from a number of fractional ohms (Ω).
+    ///
+    /// The fractional part is rounded down to the nearest whole milliohm (mΩ).
     fn ohms(self) -> Resistance;
+
+    /// Creates a new `Resistance` from a number of fractional kilohms (kΩ).
+    ///
+    /// The fractional part is rounded down to the nearest whole milliohm (mΩ).
     fn kilo_ohms(self) -> Resistance;
+
+    /// Creates a new `Resistance` from a number of fractional megaohms (MΩ).
+    ///
+    /// The fractional part is rounded down to the nearest whole milliohm (mΩ).
     fn mega_ohms(self) -> Resistance;
 }
 
 impl ExtF32 for f32 {
-    /// Creates a new `Resistance` from a number of fractional milliohms (mΩ).
-    ///
-    /// The fractional part is rounded down to the nearest whole milliohm (mΩ).
     #[inline]
     fn milli_ohms(self) -> Resistance {
         Resistance::from_milli_ohms(self as u32)
     }
 
-    /// Creates a new `Resistance` from a number of fractional ohms (Ω).
-    ///
-    /// The fractional part is rounded down to the nearest whole milliohm (mΩ).
     #[inline]
     fn ohms(self) -> Resistance {
         Resistance::from_milli_ohms((self * 1_000f32) as u32)
     }
 
-    /// Creates a new `Resistance` from a number of fractional kilohms (kΩ).
-    ///
-    /// The fractional part is rounded down to the nearest whole milliohm (mΩ).
     #[inline]
     fn kilo_ohms(self) -> Resistance {
         Resistance::from_milli_ohms((self * 1_000_000f32) as u32)
     }
 
-    /// Creates a new `Resistance` from a number of fractional megaohms (MΩ).
-    ///
-    /// The fractional part is rounded down to the nearest whole milliohm (mΩ).
     #[inline]
     fn mega_ohms(self) -> Resistance {
         Resistance::from_milli_ohms((self * 1_000_000_000f32) as u32)
