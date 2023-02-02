@@ -7,7 +7,7 @@ repository = "https://github.com/UnderLogic/ohms"
 license = "MIT"
 description = "Electrical units library for embedded targets"
 readme = "README.md"
-keywords = ["electrical", "units", "resistance", "voltage", "current", "power", "energy", "ohm", "volt", "amp", "watt"]
+keywords = ["electrical", "units", "ohm", "volt", "amp"]
 categories = ["embedded", "no-std"]
 
 [dependencies]
