@@ -1,0 +1,10 @@
+/target
+/Cargo.lock
+*.log
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# JetBrains IDE
+.idea/

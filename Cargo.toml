@@ -1,0 +1,13 @@
+[package]
+name = "ohms"
+version = "0.0.0"
+authors = ["Erik Rogers <erik@underlogic.tech>"]
+edition = "2021"
+repository = "https://github.com/UnderLogic/ohms"
+license = "MIT"
+description = "Electrical units library for embedded targets"
+readme = "README.md"
+keywords = ["electrical", "units", "resistance", "voltage", "current", "power", "energy", "ohm", "volt", "amp", "watt"]
+categories = ["embedded", "no-std"]
+
+[dependencies]
