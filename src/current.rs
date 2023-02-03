@@ -95,7 +95,7 @@ impl Current {
         self.microamps
     }
 
-    /// Returns the current value in fractional amps (A).
+    /// Returns the current value in fractional milliamps (A).
     #[inline]
     pub fn milli_amps(&self) -> f32 {
         self.microamps as f32 / 1_000f32
