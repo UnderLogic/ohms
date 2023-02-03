@@ -90,6 +90,12 @@ impl Voltage {
         Voltage { microvolts }
     }
 
+    /// Returns the voltage value in whole microvolts (μV).
+    #[inline]
+    pub fn micro_volts(&self) -> i32 {
+        self.microvolts
+    }
+
     /// Returns the voltage value in fractional millivolts (mV).
     #[inline]
     pub fn milli_volts(&self) -> f32 {
