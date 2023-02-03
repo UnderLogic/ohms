@@ -7,6 +7,7 @@ Greatly inspired by the [fugit](https://github.com/korken89/fugit) crate.
 
 ## Supported Units
 
+- [Current](src/current.rs) (Amps)
 - [Resistance](src/resistance.rs) (Ohms)
 - [Voltage](src/voltage.rs) (Volts)
 

@@ -265,7 +265,7 @@ impl ops::Div<f32> for Voltage {
     }
 }
 
-/// Extension trait for simple short-hands for creating `Voltage` values from `u32` values.
+/// Extension trait for simple short-hands for creating `Voltage` values from `i32` values.
 pub trait ExtI32 {
     /// Creates a new `Voltage` from a number of whole microvolts (μV).
     fn micro_volts(self) -> Voltage;
