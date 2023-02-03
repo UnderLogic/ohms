@@ -3,7 +3,7 @@
 //! Supported units:
 //! - Current (μA, mA, A)
 //! - Resistance (mΩ, Ω, kΩ, MΩ)
-//! - Voltage (μV, mV, V)
+//! - Voltage (μV, mV, V, kV)
 //!
 //! Each unit type has a corresponding extension trait for creating values from `i32`/`u32` and `f32`
 //! values. The extension traits are named `ExtI32`, `ExtU32`, and `ExtF32` respectively.
