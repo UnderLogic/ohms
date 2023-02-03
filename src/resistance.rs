@@ -27,9 +27,9 @@ use core::{cmp, ops};
 /// let r2 = 4.7f32.kilo_ohms(); // 4.7kΩ
 ///
 /// if r1 > r2 {
-///    println!("{} is greater than {}", r1, r2);
+///     println!("{} is greater than {}", r1, r2);
 /// } else {
-///   println!("{} is less than or equal to {}", r1, r2);
+///     println!("{} is less than or equal to {}", r1, r2);
 /// }
 /// ```
 ///
@@ -114,17 +114,18 @@ impl Resistance {
 
     /// Returns whether the resistance value is zero ohms (0Ω).
     #[inline]
-    pub fn is_zero(&self) -> bool {
+    pub const fn is_zero(&self) -> bool {
         self.milliohms == 0
     }
 
     /// Returns a `Resistance` value of zero ohms (0Ω).
     #[inline]
-    pub fn zero() -> Self {
+    pub const fn zero() -> Self {
         Resistance::from_milli_ohms(0)
     }
 }
 
+// Equality traits
 impl PartialEq for Resistance {
     fn eq(&self, other: &Resistance) -> bool {
         self.milliohms == other.milliohms
@@ -133,6 +134,7 @@ impl PartialEq for Resistance {
 
 impl Eq for Resistance {}
 
+// Comparison traits
 impl PartialOrd for Resistance {
     fn partial_cmp(&self, other: &Resistance) -> Option<cmp::Ordering> {
         self.milliohms.partial_cmp(&other.milliohms)
@@ -145,6 +147,7 @@ impl Ord for Resistance {
     }
 }
 
+// Math operators
 impl ops::Add for Resistance {
     type Output = Resistance;
 
