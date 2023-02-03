@@ -2,6 +2,7 @@ use crate::{assert, helpers};
 use core::{cmp, ops};
 
 /// Represents a current value, stored as whole microamps (μA).
+/// This value can only be positive.
 ///
 /// **Reminder:** `1000 μA = 1 mA, 1000 mA = 1 A`
 ///

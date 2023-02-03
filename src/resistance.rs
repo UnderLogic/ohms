@@ -2,6 +2,7 @@ use crate::{assert, helpers};
 use core::{cmp, ops};
 
 /// Represents a resistance value, stored as whole milliohms (mΩ).
+/// This value can only be positive.
 ///
 /// **Reminder:** `1000 mΩ = 1 Ω, 1000 Ω = 1 kΩ, 1000 kΩ = 1 MΩ`
 ///

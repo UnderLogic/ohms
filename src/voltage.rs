@@ -2,7 +2,7 @@ use crate::helpers;
 use core::{cmp, ops};
 
 /// Represents a voltage value, stored as whole microvolts (μV).
-/// This can be positive or negative.
+/// This value can be positive or negative.
 ///
 /// **Reminder:** `1000 μV = 1 mV, 1000 mV = 1 V, 1000 V = 1k V`
 ///
