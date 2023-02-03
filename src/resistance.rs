@@ -1,3 +1,4 @@
+use crate::{assert, helpers};
 use core::{cmp, ops};
 
 /// Represents a resistance value, stored as whole milliohms (mΩ).
@@ -181,16 +182,21 @@ impl ops::Mul<f32> for Resistance {
     type Output = Resistance;
 
     fn mul(self, other: f32) -> Resistance {
-        let milliohms = self.milliohms as f32 * other;
-        match milliohms {
-            milliohms if milliohms.is_infinite() => {
-                panic!("Infinity when multiplying resistance value")
+        let result = match other {
+            _ if other.is_infinite() => {
+                panic!("Cannot multiply resistance value by infinity")
             }
-            milliohms if milliohms.is_nan() => panic!("NaN when multiplying resistance value"),
-            milliohms if milliohms.is_sign_negative() => {
-                panic!("Negative value when multiplying resistance value")
+            _ if other.is_nan() => panic!("Cannot multiply resistance value by NaN"),
+            _ if other.is_sign_negative() => {
+                panic!("Cannot multiply resistance value by negative value")
             }
-            _ => Resistance::from_milli_ohms(milliohms as u32),
+            _ if other == 0f32 => Some(0),
+            _ => helpers::checked_mul_f32(self.milliohms, other),
+        };
+
+        match result {
+            Some(milliohms) => Resistance::from_milli_ohms(milliohms),
+            _ => panic!("Overflow when multiplying resistance value"),
         }
     }
 }
@@ -210,16 +216,21 @@ impl ops::Div<f32> for Resistance {
     type Output = Resistance;
 
     fn div(self, other: f32) -> Resistance {
-        let milliohms = self.milliohms as f32 / other;
-        match milliohms {
-            milliohms if milliohms.is_infinite() => {
-                panic!("Infinity when dividing resistance value")
+        let result = match other {
+            _ if other.is_infinite() => {
+                panic!("Cannot divide resistance value by infinity")
             }
-            milliohms if milliohms.is_nan() => panic!("NaN when dividing resistance value"),
-            milliohms if milliohms.is_sign_negative() => {
-                panic!("Negative value when dividing resistance value")
+            _ if other.is_nan() => panic!("Cannot divide resistance value by NaN"),
+            _ if other.is_sign_negative() => {
+                panic!("Cannot divide resistance value by negative value")
             }
-            _ => Resistance::from_milli_ohms(milliohms as u32),
+            _ if other == 0f32 => panic!("Cannot divide resistance value by zero"),
+            _ => helpers::checked_div_f32(self.milliohms, other),
+        };
+
+        match result {
+            Some(milliohms) => Resistance::from_milli_ohms(milliohms),
+            _ => panic!("Overflow when dividing resistance value"),
         }
     }
 }
@@ -247,17 +258,26 @@ impl ExtU32 for u32 {
 
     #[inline]
     fn ohms(self) -> Resistance {
-        Resistance::from_milli_ohms(self * 1_000)
+        let milliohms = self
+            .checked_mul(1_000)
+            .expect("Overflow when converting ohms to milliohms");
+        Resistance::from_milli_ohms(milliohms)
     }
 
     #[inline]
     fn kilo_ohms(self) -> Resistance {
-        Resistance::from_milli_ohms(self * 1_000_000)
+        let milliohms = self
+            .checked_mul(1_000_000)
+            .expect("Overflow when converting kilohms to milliohms");
+        Resistance::from_milli_ohms(milliohms)
     }
 
     #[inline]
     fn mega_ohms(self) -> Resistance {
-        Resistance::from_milli_ohms(self * 1_000_000_000)
+        let milliohms = self
+            .checked_mul(1_000_000_000)
+            .expect("Overflow when converting megaohms to milliohms");
+        Resistance::from_milli_ohms(milliohms)
     }
 }
 
@@ -287,21 +307,31 @@ pub trait ExtF32 {
 impl ExtF32 for f32 {
     #[inline]
     fn milli_ohms(self) -> Resistance {
+        assert::is_positive_value(self);
         Resistance::from_milli_ohms(self as u32)
     }
 
     #[inline]
     fn ohms(self) -> Resistance {
-        Resistance::from_milli_ohms((self * 1_000f32) as u32)
+        assert::is_positive_value(self);
+        let milliohms = helpers::checked_mul_f32(1_000, self)
+            .expect("Overflow when converting ohms to milliohms");
+        Resistance::from_milli_ohms(milliohms)
     }
 
     #[inline]
     fn kilo_ohms(self) -> Resistance {
-        Resistance::from_milli_ohms((self * 1_000_000f32) as u32)
+        assert::is_positive_value(self);
+        let milliohms = helpers::checked_mul_f32(1_000_000, self)
+            .expect("Overflow when converting kilohms to milliohms");
+        Resistance::from_milli_ohms(milliohms)
     }
 
     #[inline]
     fn mega_ohms(self) -> Resistance {
-        Resistance::from_milli_ohms((self * 1_000_000_000f32) as u32)
+        assert::is_positive_value(self);
+        let milliohms = helpers::checked_mul_f32(1_000_000_000, self)
+            .expect("Overflow when converting megaohms to milliohms");
+        Resistance::from_milli_ohms(milliohms)
     }
 }
