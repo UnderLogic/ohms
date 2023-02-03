@@ -127,6 +127,7 @@ impl Resistance {
 
 // Equality traits
 impl PartialEq for Resistance {
+    #[inline]
     fn eq(&self, other: &Resistance) -> bool {
         self.milliohms == other.milliohms
     }
@@ -136,12 +137,14 @@ impl Eq for Resistance {}
 
 // Comparison traits
 impl PartialOrd for Resistance {
+    #[inline]
     fn partial_cmp(&self, other: &Resistance) -> Option<cmp::Ordering> {
         self.milliohms.partial_cmp(&other.milliohms)
     }
 }
 
 impl Ord for Resistance {
+    #[inline]
     fn cmp(&self, other: &Resistance) -> cmp::Ordering {
         self.milliohms.cmp(&other.milliohms)
     }
@@ -151,6 +154,7 @@ impl Ord for Resistance {
 impl ops::Add for Resistance {
     type Output = Resistance;
 
+    #[inline]
     fn add(self, other: Resistance) -> Resistance {
         self.milliohms
             .checked_add(other.milliohms)
@@ -162,6 +166,7 @@ impl ops::Add for Resistance {
 impl ops::Sub for Resistance {
     type Output = Resistance;
 
+    #[inline]
     fn sub(self, other: Resistance) -> Resistance {
         self.milliohms
             .checked_sub(other.milliohms)
@@ -173,6 +178,7 @@ impl ops::Sub for Resistance {
 impl ops::Mul<u32> for Resistance {
     type Output = Resistance;
 
+    #[inline]
     fn mul(self, other: u32) -> Resistance {
         self.milliohms
             .checked_mul(other)
@@ -184,6 +190,7 @@ impl ops::Mul<u32> for Resistance {
 impl ops::Mul<f32> for Resistance {
     type Output = Resistance;
 
+    #[inline]
     fn mul(self, other: f32) -> Resistance {
         let result = match other {
             _ if other.is_infinite() => {
@@ -207,6 +214,7 @@ impl ops::Mul<f32> for Resistance {
 impl ops::Div<u32> for Resistance {
     type Output = Resistance;
 
+    #[inline]
     fn div(self, other: u32) -> Resistance {
         self.milliohms
             .checked_div(other)
@@ -218,6 +226,7 @@ impl ops::Div<u32> for Resistance {
 impl ops::Div<f32> for Resistance {
     type Output = Resistance;
 
+    #[inline]
     fn div(self, other: f32) -> Resistance {
         let result = match other {
             _ if other.is_infinite() => {
