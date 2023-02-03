@@ -1,4 +1,4 @@
-use crate::{assert, helpers};
+use crate::helpers;
 use core::{cmp, ops};
 
 /// Represents a voltage value, stored as whole microvolts (μV).
@@ -92,7 +92,7 @@ impl Voltage {
 
     /// Returns the voltage value in fractional millivolts (mV).
     #[inline]
-    pub const fn milli_volts(&self) -> f32 {
+    pub fn milli_volts(&self) -> f32 {
         self.microvolts as f32 / 1_000f32
     }
 
