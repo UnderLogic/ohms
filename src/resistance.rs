@@ -3,6 +3,8 @@ use core::{cmp, ops};
 
 /// Represents a resistance value, stored as whole milliohms (mΩ).
 ///
+/// **Reminder:** `1000 mΩ = 1 Ω, 1000 Ω = 1 kΩ, 1000 kΩ = 1 MΩ`
+///
 /// This is an immutable type. Any math operators return a new `Resistance` value.
 ///
 /// # Creating a Resistance value
@@ -201,7 +203,7 @@ impl ops::Mul<f32> for Resistance {
                 panic!("Cannot multiply resistance value by negative value")
             }
             _ if other == 0f32 => Some(0),
-            _ => helpers::checked_mul_f32(self.milliohms, other),
+            _ => helpers::checked_mul_unsigned_f32(self.milliohms, other),
         };
 
         match result {
@@ -237,7 +239,7 @@ impl ops::Div<f32> for Resistance {
                 panic!("Cannot divide resistance value by negative value")
             }
             _ if other == 0f32 => panic!("Cannot divide resistance value by zero"),
-            _ => helpers::checked_div_f32(self.milliohms, other),
+            _ => helpers::checked_div_unsigned_f32(self.milliohms, other),
         };
 
         match result {
@@ -326,7 +328,7 @@ impl ExtF32 for f32 {
     #[inline]
     fn ohms(self) -> Resistance {
         assert::is_positive_value(self);
-        let milliohms = helpers::checked_mul_f32(1_000, self)
+        let milliohms = helpers::checked_mul_unsigned_f32(1_000, self)
             .expect("Overflow when converting ohms to milliohms");
         Resistance::from_milli_ohms(milliohms)
     }
@@ -334,7 +336,7 @@ impl ExtF32 for f32 {
     #[inline]
     fn kilo_ohms(self) -> Resistance {
         assert::is_positive_value(self);
-        let milliohms = helpers::checked_mul_f32(1_000_000, self)
+        let milliohms = helpers::checked_mul_unsigned_f32(1_000_000, self)
             .expect("Overflow when converting kilohms to milliohms");
         Resistance::from_milli_ohms(milliohms)
     }
@@ -342,7 +344,7 @@ impl ExtF32 for f32 {
     #[inline]
     fn mega_ohms(self) -> Resistance {
         assert::is_positive_value(self);
-        let milliohms = helpers::checked_mul_f32(1_000_000_000, self)
+        let milliohms = helpers::checked_mul_unsigned_f32(1_000_000_000, self)
             .expect("Overflow when converting megaohms to milliohms");
         Resistance::from_milli_ohms(milliohms)
     }

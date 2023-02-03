@@ -3,11 +3,12 @@
 
 Electrical units library for embedded Rust targets focusing on ease-of-use and performance
 
-Greatly inspired by the [fugit](https://github.com/korken89/fugit/tree/master) crate.
+Greatly inspired by the [fugit](https://github.com/korken89/fugit) crate.
 
 ## Supported Units
 
 - [Resistance](src/resistance.rs) (Ohms)
+- [Voltage](src/voltage.rs) (Volts)
 
 ## Installation
 
