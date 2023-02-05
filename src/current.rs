@@ -197,7 +197,7 @@ impl ops::Mul<f32> for Current {
 
     #[inline]
     fn mul(self, other: f32) -> Current {
-        let result = match other {
+        let microamps = match other {
             _ if other.is_infinite() => {
                 panic!("Cannot multiply current value by infinity")
             }
@@ -209,10 +209,7 @@ impl ops::Mul<f32> for Current {
             _ => helpers::checked_mul_unsigned_f32(self.microamps, other),
         };
 
-        match result {
-            Some(milliamps) => Current::from_micro_amps(milliamps),
-            _ => panic!("Overflow when multiplying current value"),
-        }
+        Current::from_micro_amps(microamps.unwrap())
     }
 }
 
@@ -233,7 +230,7 @@ impl ops::Div<f32> for Current {
 
     #[inline]
     fn div(self, other: f32) -> Current {
-        let result = match other {
+        let microamps = match other {
             _ if other.is_infinite() => {
                 panic!("Cannot divide current value by infinity")
             }
@@ -245,10 +242,7 @@ impl ops::Div<f32> for Current {
             _ => helpers::checked_div_unsigned_f32(self.microamps, other),
         };
 
-        match result {
-            Some(milliamps) => Current::from_micro_amps(milliamps),
-            _ => panic!("Overflow when dividing current value"),
-        }
+        Current::from_micro_amps(microamps.unwrap())
     }
 }
 

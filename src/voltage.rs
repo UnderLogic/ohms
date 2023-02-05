@@ -232,7 +232,7 @@ impl ops::Mul<f32> for Voltage {
 
     #[inline]
     fn mul(self, other: f32) -> Voltage {
-        let result = match other {
+        let microvolts = match other {
             _ if other.is_infinite() => {
                 panic!("Cannot multiply voltage value by infinity")
             }
@@ -241,10 +241,7 @@ impl ops::Mul<f32> for Voltage {
             _ => helpers::checked_mul_signed_f32(self.microvolts, other),
         };
 
-        match result {
-            Some(microvolts) => Voltage::from_micro_volts(microvolts),
-            _ => panic!("Overflow when multiplying voltage value"),
-        }
+        Voltage::from_micro_volts(microvolts.unwrap())
     }
 }
 
@@ -265,7 +262,7 @@ impl ops::Div<f32> for Voltage {
 
     #[inline]
     fn div(self, other: f32) -> Voltage {
-        let result = match other {
+        let microvolts = match other {
             _ if other.is_infinite() => {
                 panic!("Cannot divide voltage value by infinity")
             }
@@ -274,10 +271,7 @@ impl ops::Div<f32> for Voltage {
             _ => helpers::checked_div_signed_f32(self.microvolts, other),
         };
 
-        match result {
-            Some(microvolts) => Voltage::from_micro_volts(microvolts),
-            _ => panic!("Overflow when dividing voltage value"),
-        }
+        Voltage::from_micro_volts(microvolts.unwrap())
     }
 }
 

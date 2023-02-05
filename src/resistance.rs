@@ -205,7 +205,7 @@ impl ops::Mul<f32> for Resistance {
 
     #[inline]
     fn mul(self, other: f32) -> Resistance {
-        let result = match other {
+        let milliohms = match other {
             _ if other.is_infinite() => {
                 panic!("Cannot multiply resistance value by infinity")
             }
@@ -217,10 +217,7 @@ impl ops::Mul<f32> for Resistance {
             _ => helpers::checked_mul_unsigned_f32(self.milliohms, other),
         };
 
-        match result {
-            Some(milliohms) => Resistance::from_milli_ohms(milliohms),
-            _ => panic!("Overflow when multiplying resistance value"),
-        }
+        Resistance::from_milli_ohms(milliohms.unwrap())
     }
 }
 
@@ -244,7 +241,7 @@ impl ops::Div<f32> for Resistance {
 
     #[inline]
     fn div(self, other: f32) -> Resistance {
-        let result = match other {
+        let milliohms = match other {
             _ if other.is_infinite() => {
                 panic!("Cannot divide resistance value by infinity")
             }
@@ -256,10 +253,7 @@ impl ops::Div<f32> for Resistance {
             _ => helpers::checked_div_unsigned_f32(self.milliohms, other),
         };
 
-        match result {
-            Some(milliohms) => Resistance::from_milli_ohms(milliohms),
-            _ => panic!("Overflow when dividing resistance value"),
-        }
+        Resistance::from_milli_ohms(milliohms.unwrap())
     }
 }
 
@@ -367,6 +361,7 @@ impl ExtF32 for f32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use core::cmp::Ordering;
     use test_case::test_case;
 
     #[test]
@@ -457,6 +452,15 @@ mod tests {
         assert_eq!(lhs <= rhs, expected);
     }
 
+    #[test_case(1_000, 2_000, Ordering::Less; "when lhs is lesser")]
+    #[test_case(1_000, 1_000, Ordering::Equal; "when both are equal")]
+    #[test_case(2_000, 1_000, Ordering::Greater; "when lhs is greater")]
+    fn test_cmp(lhs: u32, rhs: u32, expected: Ordering) {
+        let lhs = Resistance::from_milli_ohms(lhs);
+        let rhs = Resistance::from_milli_ohms(rhs);
+        assert_eq!(lhs.cmp(&rhs), expected);
+    }
+
     #[test]
     fn test_add_operator() {
         let lhs = Resistance::from_milli_ohms(1_000);
@@ -539,9 +543,15 @@ mod tests {
 
     #[test]
     fn test_div_operator_f32() {
-        let r = Resistance::from_milli_ohms(1_000);
-        let expected = Resistance::from_milli_ohms(2_500);
-        assert_eq!(r * 2.5f32, expected);
+        let r = Resistance::from_milli_ohms(2_500);
+        let expected = Resistance::from_milli_ohms(1_000);
+        assert_eq!(r / 2.5f32, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot divide resistance value by zero")]
+    fn test_div_operator_f32_by_zero() {
+        let _r = Resistance::from_milli_ohms(1_000) / 0f32;
     }
 
     #[test]
