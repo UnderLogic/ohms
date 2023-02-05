@@ -364,10 +364,48 @@ impl ExtF32 for f32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test_case::test_case;
 
     #[test]
     fn test_from_milli_ohms() {
         let r = Resistance::from_milli_ohms(1_000);
         assert_eq!(r.milli_ohms(), 1_000);
+    }
+
+    #[test]
+    fn test_milli_ohms() {
+        let r = Resistance::from_milli_ohms(1_000);
+        assert_eq!(r.milli_ohms(), 1_000);
+    }
+
+    #[test]
+    fn test_ohms() {
+        let r = Resistance::from_milli_ohms(1_000);
+        assert_eq!(r.ohms(), 1f32);
+    }
+
+    #[test]
+    fn test_kilo_ohms() {
+        let r = Resistance::from_milli_ohms(1_000_000);
+        assert_eq!(r.kilo_ohms(), 1f32);
+    }
+
+    #[test]
+    fn test_mega_ohms() {
+        let r = Resistance::from_milli_ohms(1_000_000_000);
+        assert_eq!(r.mega_ohms(), 1f32);
+    }
+
+    #[test_case(0, true; "when resistance is zero")]
+    #[test_case(1_000, false; "when resistance is not zero")]
+    fn test_is_zero(resistance: u32, expected: bool) {
+        let r = Resistance::from_milli_ohms(resistance);
+        assert_eq!(r.is_zero(), expected);
+    }
+
+    #[test]
+    fn test_zero() {
+        let r = Resistance::zero();
+        assert_eq!(r.milli_ohms(), 0);
     }
 }

@@ -11,3 +11,6 @@ keywords = ["electrical", "units", "resistance", "voltage", "current"]
 categories = ["embedded", "no-std"]
 
 [dependencies]
+
+[dev-dependencies]
+test-case = "2.2.2"
