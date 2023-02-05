@@ -18,7 +18,7 @@ use core::{cmp, ops};
 /// let r1 = Resistance::from_milli_ohms(1000); // 1Ω
 ///
 /// // More ergonomic:
-/// let r2 = 100u32.milli_ohms(); // 0.1Ω
+/// let r2 = 100.milli_ohms(); // 0.1Ω
 /// let r3 = 220u32.ohms(); // 220Ω
 /// let r4 = 1.5f32.kilo_ohms(); // 1.5kΩ
 /// let r5 = 1.5f32.mega_ohms(); // 1.5MΩ
@@ -260,6 +260,21 @@ impl ops::Div<f32> for Resistance {
     }
 }
 
+/// Extension trait for simple short-hands for creating `Resistance` values from `i32` values.
+pub trait ExtI32 {
+    /// Creates a new `Resistance` from a number of whole milliohms (mΩ).
+    fn milli_ohms(self) -> Resistance;
+
+    /// Creates a new `Resistance` from a number of whole ohms (Ω).
+    fn ohms(self) -> Resistance;
+
+    /// Creates a new `Resistance` from a number of whole kilohms (kΩ).
+    fn kilo_ohms(self) -> Resistance;
+
+    /// Creates a new `Resistance` from a number of whole megaohms (MΩ).
+    fn mega_ohms(self) -> Resistance;
+}
+
 /// Extension trait for simple short-hands for creating `Resistance` values from `u32` values.
 pub trait ExtU32 {
     /// Creates a new `Resistance` from a number of whole milliohms (mΩ).
@@ -407,5 +422,14 @@ mod tests {
     fn test_zero() {
         let r = Resistance::zero();
         assert_eq!(r.milli_ohms(), 0);
+    }
+
+    #[test_case(0, 0, true; "when both resistances are zero")]
+    #[test_case(1_000, 1_000, true; "when both resistances are equal")]
+    #[test_case(1_000, 2_000, false; "when both resistances are not equal")]
+    fn test_eq(resistance1: u32, resistance2: u32, expected: bool) {
+        let r1 = Resistance::from_milli_ohms(resistance1);
+        let r2 = Resistance::from_milli_ohms(resistance2);
+        assert_eq!(r1 == r2, expected);
     }
 }
