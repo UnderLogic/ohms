@@ -13,6 +13,8 @@ use core::{cmp, ops};
 /// extension methods on `i32` and `f32`:
 ///
 /// ```rust
+/// use ohms::*;
+///
 /// let v1 = Voltage::from_micro_volts(325); // 325μV
 ///
 /// // More ergonomic:
@@ -25,13 +27,15 @@ use core::{cmp, ops};
 /// You can compare two `Voltage` values using the `==`, `!=`, `<`, `>`, `<=` and `>=` operators.
 ///
 /// ```rust
+/// use ohms::*;
+///
 /// let v1 = 3.3f32.volts(); // 3.3V
 /// let v2 = 5.2f32.volts(); // 5.2V
 ///
 /// if v1 > v2 {
-///     println!("{} is greater than {}", v1, v2);
+///     println!("{:?} is greater than {:?}", v1, v2);
 /// } else {
-///     println!("{} is less than or equal to {}", v1, v2);
+///     println!("{:?} is less than or equal to {:?}", v1, v2);
 /// }
 /// ```
 ///
@@ -42,6 +46,8 @@ use core::{cmp, ops};
 /// If the result of the operation would overflow or underflow the `i32` value, the operation will panic.
 ///
 /// ```rust
+/// use ohms::*;
+///
 /// let v1 = 3.7f32.volts(); // 3.7V
 /// let v2 = 9.volts(); // 9V
 ///
@@ -58,10 +64,12 @@ use core::{cmp, ops};
 /// If the result of the operation would be infinite or NaN, the operation will panic.
 ///
 /// ```rust
-/// let v1 = 6u32.volts(); // 6V
+/// use ohms::*;
+///
+/// let v1 = 6.volts(); // 6V
 /// let v2 = v1 * 2; // 12V
 ///
-/// let v3 = 250u32.micro_volts(); // 250μV
+/// let v3 = 250.micro_volts(); // 250μV
 /// let v4 = v3 / 2f32; // 125μV
 /// ```
 ///
@@ -70,6 +78,8 @@ use core::{cmp, ops};
 /// value to a `i32` or `f32` value in the specified denomination.
 ///
 /// ```rust
+/// use ohms::*;
+///
 /// let v1 = 3.3f32.volts(); // 3.3V
 ///
 /// println!("{:.2}V is {:.1}mV", v1.volts(), v1.milli_volts());

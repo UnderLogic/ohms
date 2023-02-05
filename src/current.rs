@@ -13,6 +13,8 @@ use core::{cmp, ops};
 /// extension methods on `u32` and `f32`:
 ///
 /// ```rust
+/// use ohms::*;
+///
 /// let c1 = Current::from_micro_amps(1000); // 1mA
 ///
 /// // More ergonomic:
@@ -24,13 +26,15 @@ use core::{cmp, ops};
 /// You can compare two `Current` values using the `==`, `!=`, `<`, `>`, `<=` and `>=` operators.
 ///
 /// ```rust
+/// use ohms::*;
+///
 /// let c1 = 220u32.milli_amps(); // 220mA
 /// let c2 = 1.2f32.amps(); // 1.2A
 ///
 /// if c1 > c2 {
-///     println!("{} is greater than {}", c1, c2);
+///     println!("{:?} is greater than {:?}", c1, c2);
 /// } else {
-///     println!("{} is less than or equal to {}", c1, c2);
+///     println!("{:?} is less than or equal to {:?}", c1, c2);
 /// }
 /// ```
 ///
@@ -41,6 +45,8 @@ use core::{cmp, ops};
 /// If the result of the operation would overflow or underflow the `u32` value, the operation will panic.
 ///
 /// ```rust
+/// use ohms::*;
+///
 /// let c1 = 500u32.amps(); // 0.5A
 /// let c2 = 1.1f32.amps(); // 1.1A
 ///
@@ -57,6 +63,8 @@ use core::{cmp, ops};
 /// If the result of the operation would be infinite or NaN, the operation will panic.
 ///
 /// ```rust
+/// use ohms::*;
+///
 /// let c1 = 200u32.milli_amps(); // 200mA
 /// let c2 = c1 * 3; // 660mA
 ///
@@ -69,6 +77,8 @@ use core::{cmp, ops};
 /// value to a `u32` or `f32` value in the specified denomination.
 ///
 /// ```rust
+/// use ohms::*;
+///
 /// let c1 = 1.2f32.amps(); // 1.2A
 ///
 /// println!("{:.3}A is {:.1}A", c1.amps(), c1.milli_amps());
