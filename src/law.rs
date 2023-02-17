@@ -34,12 +34,16 @@ impl ops::Mul<Resistance> for Current {
     ///
     /// Will be rounded down to the nearest whole microvolt (μV).
     fn mul(self, resistance: Resistance) -> Self::Output {
-        let micro_amps = self.micro_amps();
+        let micro_amps = self.micro_amps() as u64;
+
         let nano_volts = micro_amps
-            .checked_mul(resistance.milli_ohms())
+            .checked_mul(resistance.milli_ohms() as u64)
             .expect("Voltage would overflow");
 
-        let micro_volts = nano_volts / 1000u32;
+        let micro_volts = nano_volts
+            .checked_div(1000u64)
+            .expect("Voltage would overflow");
+
         Voltage::from_micro_volts(micro_volts as i32)
     }
 }
@@ -67,13 +71,17 @@ impl ops::Div<Current> for Voltage {
             panic!("Current cannot be zero, infinite resistance would result");
         }
 
-        let micro_volts = self.abs().micro_volts() as u32;
-        let micro_ohms = micro_volts
-            .checked_div(current.micro_amps())
+        let micro_volts = self.micro_volts().unsigned_abs();
+
+        let nano_volts = (micro_volts as u64)
+            .checked_mul(1000u64)
+            .expect("Voltage would overflow");
+
+        let milli_ohms = nano_volts
+            .checked_div(current.micro_amps() as u64)
             .expect("Resistance would overflow");
 
-        let milli_ohms = micro_ohms / 1000u32;
-        Resistance::from_milli_ohms(milli_ohms)
+        Resistance::from_milli_ohms(milli_ohms as u32)
     }
 }
 
@@ -95,5 +103,49 @@ mod tests {
         let current = v / r;
 
         assert_eq!(current.micro_amps(), expected_micro_amps);
+    }
+
+    #[test_case(25_000, 75_000, 1_875_000; "25mA, 75Ω equals 1_875_000μV")]
+    #[test_case(39_000, 162_000, 6_318_000; "39mA, 162Ω equals 6_318_000μV")]
+    fn test_voltage_equals_current_times_resistance(
+        micro_amps: u32,
+        milli_ohms: u32,
+        expected_micro_volts: i32,
+    ) {
+        let i = Current::from_micro_amps(micro_amps);
+        let r = Resistance::from_milli_ohms(milli_ohms);
+        let voltage = i * r;
+
+        assert_eq!(voltage.micro_volts(), expected_micro_volts);
+    }
+
+    #[test_case(25_000, 75_000, 1_875_000; "25mA, 75Ω equals 1_875_000μV")]
+    #[test_case(39_000, 162_000, 6_318_000; "39mA, 162Ω equals 6_318_000μV")]
+    fn test_voltage_equals_resistance_times_current(
+        micro_amps: u32,
+        milli_ohms: u32,
+        expected_micro_volts: i32,
+    ) {
+        let r = Resistance::from_milli_ohms(milli_ohms);
+        let i = Current::from_micro_amps(micro_amps);
+        let voltage = r * i;
+
+        assert_eq!(voltage.micro_volts(), expected_micro_volts);
+    }
+
+    #[test_case(1_875_000, 25_000, 75_000; "positive 1.875V, 25mA equals 75Ω")]
+    #[test_case(-1_875_000, 25_000, 75_000; "negative 1.875V, 25mA equals 75Ω")]
+    #[test_case(6_318_000, 39_000, 162_000; "positive 6.318V, 39mA equals 162Ω")]
+    #[test_case(-6_318_000, 39_000, 162_000; "negative 6.318V, 39mA equals 162Ω")]
+    fn test_resistance_equals_voltage_over_current(
+        micro_volts: i32,
+        micro_amps: u32,
+        expected_milli_ohms: u32,
+    ) {
+        let v = Voltage::from_micro_volts(micro_volts);
+        let i = Current::from_micro_amps(micro_amps);
+        let resistance = v / i;
+
+        assert_eq!(resistance.milli_ohms(), expected_milli_ohms);
     }
 }
