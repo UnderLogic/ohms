@@ -242,6 +242,7 @@ impl ops::Div<f32> for Resistance {
     #[inline]
     fn div(self, other: f32) -> Resistance {
         let milliohms = match other {
+            _ if other == 0f32 => panic!("Cannot divide resistance value by zero"),
             _ if other.is_infinite() => {
                 panic!("Cannot divide resistance value by infinity")
             }
@@ -249,7 +250,6 @@ impl ops::Div<f32> for Resistance {
             _ if other.is_sign_negative() => {
                 panic!("Cannot divide resistance value by negative value")
             }
-            _ if other == 0f32 => panic!("Cannot divide resistance value by zero"),
             _ => helpers::checked_div_unsigned_f32(self.milliohms, other),
         };
 

@@ -250,6 +250,9 @@ impl ops::Div<i32> for Voltage {
 
     #[inline]
     fn div(self, other: i32) -> Voltage {
+        if other == 0 {
+            panic!("Cannot divide voltage value by zero");
+        }
         self.microvolts
             .checked_div(other)
             .map(Voltage::from_micro_volts)
@@ -263,11 +266,11 @@ impl ops::Div<f32> for Voltage {
     #[inline]
     fn div(self, other: f32) -> Voltage {
         let microvolts = match other {
+            _ if other == 0f32 => panic!("Cannot divide voltage value by zero"),
             _ if other.is_infinite() => {
                 panic!("Cannot divide voltage value by infinity")
             }
             _ if other.is_nan() => panic!("Cannot divide voltage value by NaN"),
-            _ if other == 0f32 => panic!("Cannot divide voltage value by zero"),
             _ => helpers::checked_div_signed_f32(self.microvolts, other),
         };
 
@@ -369,5 +372,318 @@ impl ExtF32 for f32 {
         let millivolts = helpers::checked_mul_signed_f32(1_000_000_000, self)
             .expect("Overflow when converting kilovolts to microvolts");
         Voltage::from_micro_volts(millivolts)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use core::cmp::Ordering;
+    use test_case::test_case;
+
+    #[test]
+    fn test_from_micro_volts() {
+        let v = Voltage::from_micro_volts(1_000);
+        assert_eq!(v.micro_volts(), 1_000);
+    }
+
+    #[test]
+    fn test_micro_volts() {
+        let v = Voltage::from_micro_volts(1_000);
+        assert_eq!(v.micro_volts(), 1_000);
+    }
+
+    #[test]
+    fn test_milli_volts() {
+        let v = Voltage::from_micro_volts(1_000);
+        assert_eq!(v.milli_volts(), 1f32);
+    }
+
+    #[test]
+    fn test_volts() {
+        let v = Voltage::from_micro_volts(1_000_000);
+        assert_eq!(v.volts(), 1f32);
+    }
+
+    #[test]
+    fn test_kilo_volts() {
+        let v = Voltage::from_micro_volts(1_000_000_000);
+        assert_eq!(v.kilo_volts(), 1f32);
+    }
+
+    #[test_case(0, true; "when voltage is zero")]
+    #[test_case(1_000, false; "when voltage is greater than zero")]
+    #[test_case(-1_000, false; "when voltage is less than zero")]
+    fn test_is_zero(voltage: i32, expected: bool) {
+        let v = Voltage::from_micro_volts(voltage);
+        assert_eq!(v.is_zero(), expected);
+    }
+
+    #[test]
+    fn test_zero() {
+        let v = Voltage::zero();
+        assert_eq!(v.micro_volts(), 0);
+    }
+
+    #[test_case(0, true; "when voltage is zero")]
+    #[test_case(1_000, true; "when voltage is greater than zero")]
+    #[test_case(-1_000, false; "when voltage is less than zero")]
+    fn test_is_positive(voltage: i32, expected: bool) {
+        let v = Voltage::from_micro_volts(voltage);
+        assert_eq!(v.is_positive(), expected);
+    }
+
+    #[test_case(0, false; "when voltage is zero")]
+    #[test_case(1_000, false; "when voltage is greater than zero")]
+    #[test_case(-1_000, true; "when voltage is less than zero")]
+    fn test_is_negative(voltage: i32, expected: bool) {
+        let v = Voltage::from_micro_volts(voltage);
+        assert_eq!(v.is_negative(), expected);
+    }
+
+    #[test_case(0, 0; "when voltage is zero")]
+    #[test_case(1_000, 1_000; "when voltage is greater than zero")]
+    #[test_case(-1_000, 1_000; "when voltage is less than zero")]
+    fn test_abs(voltage: i32, expected: i32) {
+        let v = Voltage::from_micro_volts(voltage);
+        assert_eq!(v.abs().micro_volts(), expected);
+    }
+
+    #[test_case(0, 0; "when voltage is zero")]
+    #[test_case(1_000, -1_000; "when voltage is greater than zero")]
+    #[test_case(-1_000, 1_000; "when voltage is less than zero")]
+    fn test_invert(voltage: i32, expected: i32) {
+        let v = Voltage::from_micro_volts(voltage);
+        assert_eq!(v.invert().micro_volts(), expected);
+    }
+
+    #[test_case(0, 0, true; "when both are zero")]
+    #[test_case(1_000, 1_000, true; "when lhs equals rhs")]
+    #[test_case(1_000, 2_000, false; "when lhs does not equal rhs")]
+    fn test_eq(lhs: i32, rhs: i32, expected: bool) {
+        let lhs = Voltage::from_micro_volts(lhs);
+        let rhs = Voltage::from_micro_volts(rhs);
+        assert_eq!(lhs == rhs, expected);
+    }
+
+    #[test_case(1_000, 1_000, false; "when both are equal")]
+    #[test_case(2_000, 1_000, true; "when lhs is greater")]
+    #[test_case(1_000, 2_000, false; "when rhs is greater")]
+    fn test_gt(lhs: i32, rhs: i32, expected: bool) {
+        let lhs = Voltage::from_micro_volts(lhs);
+        let rhs = Voltage::from_micro_volts(rhs);
+        assert_eq!(lhs > rhs, expected);
+    }
+
+    #[test_case(1_000, 1_000, true; "when both are equal")]
+    #[test_case(2_000, 1_000, true; "when lhs is greater")]
+    #[test_case(1_000, 2_000, false; "when rhs is greater")]
+    fn test_gte(lhs: i32, rhs: i32, expected: bool) {
+        let lhs = Voltage::from_micro_volts(lhs);
+        let rhs = Voltage::from_micro_volts(rhs);
+        assert_eq!(lhs >= rhs, expected);
+    }
+
+    #[test_case(1_000, 1_000, false; "when both are equal")]
+    #[test_case(1_000, 2_000, true; "when lhs is lesser")]
+    #[test_case(2_000, 1_000, false; "when rhs is lesser")]
+    fn test_lt(lhs: i32, rhs: i32, expected: bool) {
+        let lhs = Voltage::from_micro_volts(lhs);
+        let rhs = Voltage::from_micro_volts(rhs);
+        assert_eq!(lhs < rhs, expected);
+    }
+
+    #[test_case(1_000, 1_000, true; "when both are equal")]
+    #[test_case(1_000, 2_000, true; "when lhs is lesser")]
+    #[test_case(2_000, 1_000, false; "when rhs is lesser")]
+    fn test_lte(lhs: i32, rhs: i32, expected: bool) {
+        let lhs = Voltage::from_micro_volts(lhs);
+        let rhs = Voltage::from_micro_volts(rhs);
+        assert_eq!(lhs <= rhs, expected);
+    }
+
+    #[test_case(1_000, 2_000, Ordering::Less; "when lhs is lesser")]
+    #[test_case(1_000, 1_000, Ordering::Equal; "when both are equal")]
+    #[test_case(2_000, 1_000, Ordering::Greater; "when lhs is greater")]
+    fn test_cmp(lhs: i32, rhs: i32, expected: Ordering) {
+        let lhs = Voltage::from_micro_volts(lhs);
+        let rhs = Voltage::from_micro_volts(rhs);
+        assert_eq!(lhs.cmp(&rhs), expected);
+    }
+
+    #[test_case(1_000, 2_000; "when both are positive")]
+    #[test_case(-1_000, -2_000; "when both are negative")]
+    #[test_case(-1_000, 2_000; "when have different sign")]
+    fn test_add_operator(first: i32, second: i32) {
+        let lhs = Voltage::from_micro_volts(first);
+        let rhs = Voltage::from_micro_volts(second);
+        let expected = Voltage::from_micro_volts(first + second);
+        assert_eq!(lhs + rhs, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Overflow when adding voltage value")]
+    fn test_add_operator_overflow() {
+        let _v = Voltage::from_micro_volts(i32::MAX) + Voltage::from_micro_volts(1_000);
+    }
+
+    #[test_case(1_000, 2_000; "when both are positive")]
+    #[test_case(-1_000, -2_000; "when both are negative")]
+    #[test_case(-1_000, 2_000; "when have different sign")]
+    fn test_sub_operator(first: i32, second: i32) {
+        let lhs = Voltage::from_micro_volts(first);
+        let rhs = Voltage::from_micro_volts(second);
+        let expected = Voltage::from_micro_volts(first - second);
+        assert_eq!(lhs - rhs, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Overflow when subtracting voltage value")]
+    fn test_sub_operator_underflow() {
+        let _v = Voltage::from_micro_volts(i32::MIN) - Voltage::from_micro_volts(1_000);
+    }
+
+    #[test_case(-1_000, 2; "when multiplier is positive")]
+    #[test_case(-1_000, -2; "when multiplier is negative")]
+    fn test_mul_operator_i32(value: i32, multiplier: i32) {
+        let v = Voltage::from_micro_volts(value);
+        let expected = Voltage::from_micro_volts(value * multiplier);
+        assert_eq!(v * multiplier, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Overflow when multiplying voltage value")]
+    fn test_mul_operator_i32_overflow() {
+        let _v = Voltage::from_micro_volts(i32::MAX) * 2;
+    }
+
+    #[test_case(-1_000, 2f32; "when multiplier is positive")]
+    #[test_case(-1_000, -2f32; "when multiplier is negative")]
+    fn test_mul_operator_f32(value: i32, multiplier: f32) {
+        let v = Voltage::from_micro_volts(value);
+        let expected = Voltage::from_micro_volts((value as f32 * multiplier) as i32);
+        assert_eq!(v * multiplier, expected);
+    }
+
+    #[test_case(f32::INFINITY; "positive infinity")]
+    #[test_case(f32::NEG_INFINITY; "negative infinity")]
+    #[should_panic(expected = "Cannot multiply voltage value by infinity")]
+    fn test_mul_operator_f32_infinity(infinity: f32) {
+        let _v = Voltage::from_micro_volts(1_000) * infinity;
+    }
+
+    #[test_case(f32::NAN; "NaN")]
+    #[should_panic(expected = "Cannot multiply voltage value by NaN")]
+    fn test_mul_operator_f32_nan(nan: f32) {
+        let _v = Voltage::from_micro_volts(1_000) * nan;
+    }
+
+    #[test]
+    fn test_div_operator_i32() {
+        let v = Voltage::from_micro_volts(10_000);
+        let expected = Voltage::from_micro_volts(1_000);
+        assert_eq!(v / 10, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot divide voltage value by zero")]
+    fn test_div_operator_i32_by_zero() {
+        let _v = Voltage::from_micro_volts(1_000) / 0;
+    }
+
+    #[test]
+    fn test_div_operator_f32() {
+        let v = Voltage::from_micro_volts(2_500);
+        let expected = Voltage::from_micro_volts(1_000);
+        assert_eq!(v / 2.5f32, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot divide voltage value by zero")]
+    fn test_div_operator_f32_by_zero() {
+        let _v = Voltage::from_micro_volts(1_000) / 0f32;
+    }
+
+    #[test_case(f32::INFINITY; "positive infinity")]
+    #[test_case(f32::NEG_INFINITY; "negative infinity")]
+    #[should_panic(expected = "Cannot divide voltage value by infinity")]
+    fn test_div_operator_f32_infinity(infinity: f32) {
+        let _v = Voltage::from_micro_volts(1_000) / infinity;
+    }
+
+    #[test_case(f32::NAN; "NaN")]
+    #[should_panic(expected = "Cannot divide voltage value by NaN")]
+    fn test_div_operator_f32_nan(nan: f32) {
+        let _v = Voltage::from_micro_volts(1_000) / nan;
+    }
+
+    #[test_case(1_000; "when positive")]
+    #[test_case(-1_000; "when negative")]
+    fn test_micro_volts_i32(value: i32) {
+        let v = value.micro_volts();
+        assert_eq!(v.micro_volts(), value);
+    }
+
+    #[test_case(1_000; "when positive")]
+    #[test_case(-1_000; "when negative")]
+    fn test_milli_volts_i32(value: i32) {
+        let v = value.milli_volts();
+        assert_eq!(v.milli_volts(), value as f32);
+    }
+
+    #[test_case(1_000; "when positive")]
+    #[test_case(-1_000; "when negative")]
+    fn test_volts_i32(value: i32) {
+        let v = value.volts();
+        assert_eq!(v.volts(), value as f32);
+    }
+
+    #[test_case(2; "when positive")]
+    #[test_case(-2; "when negative")]
+    fn test_kilo_volts_i32(value: i32) {
+        let v = value.kilo_volts();
+        assert_eq!(v.kilo_volts(), value as f32);
+    }
+
+    #[test_case(4; "when positive value")]
+    #[test_case(-4; "when negative value")]
+    #[should_panic(expected = "Overflow when converting kilovolts to microvolts")]
+    fn test_kilo_volts_i32_overflow(value: i32) {
+        let _v = value.kilo_volts();
+    }
+
+    #[test_case(1_000f32; "when positive")]
+    #[test_case(-1_000f32; "when negative")]
+    fn test_micro_volts_f32(value: f32) {
+        let v = value.micro_volts();
+        assert_eq!(v.micro_volts(), value as i32);
+    }
+
+    #[test_case(1_000f32; "when positive")]
+    #[test_case(-1_000f32; "when negative")]
+    fn test_milli_volts_f32(value: f32) {
+        let v = value.milli_volts();
+        assert_eq!(v.milli_volts(), value);
+    }
+
+    #[test_case(1_000f32; "when positive")]
+    #[test_case(-1_000f32; "when negative")]
+    fn test_volts_f32(value: f32) {
+        let v = value.volts();
+        assert_eq!(v.volts(), value);
+    }
+
+    #[test_case(2f32; "when positive")]
+    #[test_case(-2f32; "when negative")]
+    fn test_kilo_volts_f32(value: f32) {
+        let v = value.kilo_volts();
+        assert_eq!(v.kilo_volts(), value);
+    }
+
+    #[test_case(4f32; "when positive value")]
+    #[test_case(-4f32; "when negative value")]
+    #[should_panic(expected = "Overflow when converting kilovolts to microvolts")]
+    fn test_kilo_volts_f32_overflow(value: f32) {
+        let _r = value.kilo_volts();
     }
 }
