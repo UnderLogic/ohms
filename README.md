@@ -19,7 +19,7 @@ The `Current`, `Resistance` and `Voltage` types follow the [Ohm's Law](https://e
 This means that you can use the `/` and `*` operators to calculate the missing value.
 For example, `Voltage / Current` will return a `Resistance` value.
 
-```
+All Ohms Law calculations are done using `u64` intermediary values to prevent overflow/underflow while calculating.
 
 ## Installation
 
