@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.4] - Unreleased
 
+### Added
+
+- Unit tests for `Current` struct
+- Unit tests for `Voltage` struct
+- Unit tests for `Resistance` struct
+
 ### Fixed
 
 - Updated docs to pass `cargo test`
