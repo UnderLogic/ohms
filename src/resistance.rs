@@ -13,10 +13,12 @@ use core::{cmp, ops};
 /// extension methods on `u32` and `f32`:
 ///
 /// ```rust
+/// use ohms::*;
+///
 /// let r1 = Resistance::from_milli_ohms(1000); // 1Ω
 ///
 /// // More ergonomic:
-/// let r2 = 100u32.milli_ohms(); // 0.1Ω
+/// let r2 = 100.milli_ohms(); // 0.1Ω
 /// let r3 = 220u32.ohms(); // 220Ω
 /// let r4 = 1.5f32.kilo_ohms(); // 1.5kΩ
 /// let r5 = 1.5f32.mega_ohms(); // 1.5MΩ
@@ -26,13 +28,15 @@ use core::{cmp, ops};
 /// You can compare two `Resistance` values using the `==`, `!=`, `<`, `>`, `<=` and `>=` operators.
 ///
 /// ```rust
+/// use ohms::*;
+///
 /// let r1 = 220u32.ohms(); // 220Ω
 /// let r2 = 4.7f32.kilo_ohms(); // 4.7kΩ
 ///
 /// if r1 > r2 {
-///     println!("{} is greater than {}", r1, r2);
+///     println!("{:?} is greater than {:?}", r1, r2);
 /// } else {
-///     println!("{} is less than or equal to {}", r1, r2);
+///     println!("{:?} is less than or equal to {:?}", r1, r2);
 /// }
 /// ```
 ///
@@ -43,6 +47,8 @@ use core::{cmp, ops};
 /// If the result of the operation would overflow or underflow the `u32` value, the operation will panic.
 ///
 /// ```rust
+/// use ohms::*;
+///
 /// let r1 = 220u32.ohms(); // 220Ω
 /// let r2 = 4.7f32.kilo_ohms(); // 4.7kΩ
 ///
@@ -59,6 +65,8 @@ use core::{cmp, ops};
 /// If the result of the operation would be infinite or NaN, the operation will panic.
 ///
 /// ```rust
+/// use ohms::*;
+///
 /// let r1 = 220u32.ohms(); // 220Ω
 /// let r2 = r1 * 3; // 660Ω
 ///
@@ -71,6 +79,8 @@ use core::{cmp, ops};
 /// value to a `u32` or `f32` value in the specified denomination.
 ///
 /// ```rust
+/// use ohms::*;
+///
 /// let r1 = 47.5f32.ohms(); // 47.5Ω
 ///
 /// println!("{:.3}kΩ is {:.1}Ω", r1.kilo_ohms(), r1.ohms());
@@ -195,7 +205,7 @@ impl ops::Mul<f32> for Resistance {
 
     #[inline]
     fn mul(self, other: f32) -> Resistance {
-        let result = match other {
+        let milliohms = match other {
             _ if other.is_infinite() => {
                 panic!("Cannot multiply resistance value by infinity")
             }
@@ -207,10 +217,7 @@ impl ops::Mul<f32> for Resistance {
             _ => helpers::checked_mul_unsigned_f32(self.milliohms, other),
         };
 
-        match result {
-            Some(milliohms) => Resistance::from_milli_ohms(milliohms),
-            _ => panic!("Overflow when multiplying resistance value"),
-        }
+        Resistance::from_milli_ohms(milliohms.unwrap())
     }
 }
 
@@ -219,6 +226,9 @@ impl ops::Div<u32> for Resistance {
 
     #[inline]
     fn div(self, other: u32) -> Resistance {
+        if other == 0 {
+            panic!("Cannot divide resistance value by zero");
+        }
         self.milliohms
             .checked_div(other)
             .map(Resistance::from_milli_ohms)
@@ -231,7 +241,8 @@ impl ops::Div<f32> for Resistance {
 
     #[inline]
     fn div(self, other: f32) -> Resistance {
-        let result = match other {
+        let milliohms = match other {
+            _ if other == 0f32 => panic!("Cannot divide resistance value by zero"),
             _ if other.is_infinite() => {
                 panic!("Cannot divide resistance value by infinity")
             }
@@ -239,14 +250,10 @@ impl ops::Div<f32> for Resistance {
             _ if other.is_sign_negative() => {
                 panic!("Cannot divide resistance value by negative value")
             }
-            _ if other == 0f32 => panic!("Cannot divide resistance value by zero"),
             _ => helpers::checked_div_unsigned_f32(self.milliohms, other),
         };
 
-        match result {
-            Some(milliohms) => Resistance::from_milli_ohms(milliohms),
-            _ => panic!("Overflow when dividing resistance value"),
-        }
+        Resistance::from_milli_ohms(milliohms.unwrap())
     }
 }
 
@@ -348,5 +355,305 @@ impl ExtF32 for f32 {
         let milliohms = helpers::checked_mul_unsigned_f32(1_000_000_000, self)
             .expect("Overflow when converting megaohms to milliohms");
         Resistance::from_milli_ohms(milliohms)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use core::cmp::Ordering;
+    use test_case::test_case;
+
+    #[test]
+    fn test_from_milli_ohms() {
+        let r = Resistance::from_milli_ohms(1_000);
+        assert_eq!(r.milli_ohms(), 1_000);
+    }
+
+    #[test]
+    fn test_milli_ohms() {
+        let r = Resistance::from_milli_ohms(1_000);
+        assert_eq!(r.milli_ohms(), 1_000);
+    }
+
+    #[test]
+    fn test_ohms() {
+        let r = Resistance::from_milli_ohms(1_000);
+        assert_eq!(r.ohms(), 1f32);
+    }
+
+    #[test]
+    fn test_kilo_ohms() {
+        let r = Resistance::from_milli_ohms(1_000_000);
+        assert_eq!(r.kilo_ohms(), 1f32);
+    }
+
+    #[test]
+    fn test_mega_ohms() {
+        let r = Resistance::from_milli_ohms(1_000_000_000);
+        assert_eq!(r.mega_ohms(), 1f32);
+    }
+
+    #[test_case(0, true; "when resistance is zero")]
+    #[test_case(1_000, false; "when resistance is not zero")]
+    fn test_is_zero(resistance: u32, expected: bool) {
+        let r = Resistance::from_milli_ohms(resistance);
+        assert_eq!(r.is_zero(), expected);
+    }
+
+    #[test]
+    fn test_zero() {
+        let r = Resistance::zero();
+        assert_eq!(r.milli_ohms(), 0);
+    }
+
+    #[test_case(0, 0, true; "when both are zero")]
+    #[test_case(1_000, 1_000, true; "when lhs equals rhs")]
+    #[test_case(1_000, 2_000, false; "when lhs does not equal rhs")]
+    fn test_eq(lhs: u32, rhs: u32, expected: bool) {
+        let lhs = Resistance::from_milli_ohms(lhs);
+        let rhs = Resistance::from_milli_ohms(rhs);
+        assert_eq!(lhs == rhs, expected);
+    }
+
+    #[test_case(1_000, 1_000, false; "when both are equal")]
+    #[test_case(2_000, 1_000, true; "when lhs is greater")]
+    #[test_case(1_000, 2_000, false; "when rhs is greater")]
+    fn test_gt(lhs: u32, rhs: u32, expected: bool) {
+        let lhs = Resistance::from_milli_ohms(lhs);
+        let rhs = Resistance::from_milli_ohms(rhs);
+        assert_eq!(lhs > rhs, expected);
+    }
+
+    #[test_case(1_000, 1_000, true; "when both are equal")]
+    #[test_case(2_000, 1_000, true; "when lhs is greater")]
+    #[test_case(1_000, 2_000, false; "when rhs is greater")]
+    fn test_gte(lhs: u32, rhs: u32, expected: bool) {
+        let lhs = Resistance::from_milli_ohms(lhs);
+        let rhs = Resistance::from_milli_ohms(rhs);
+        assert_eq!(lhs >= rhs, expected);
+    }
+
+    #[test_case(1_000, 1_000, false; "when both are equal")]
+    #[test_case(1_000, 2_000, true; "when lhs is lesser")]
+    #[test_case(2_000, 1_000, false; "when rhs is lesser")]
+    fn test_lt(lhs: u32, rhs: u32, expected: bool) {
+        let lhs = Resistance::from_milli_ohms(lhs);
+        let rhs = Resistance::from_milli_ohms(rhs);
+        assert_eq!(lhs < rhs, expected);
+    }
+
+    #[test_case(1_000, 1_000, true; "when both are equal")]
+    #[test_case(1_000, 2_000, true; "when lhs is lesser")]
+    #[test_case(2_000, 1_000, false; "when rhs is lesser")]
+    fn test_lte(lhs: u32, rhs: u32, expected: bool) {
+        let lhs = Resistance::from_milli_ohms(lhs);
+        let rhs = Resistance::from_milli_ohms(rhs);
+        assert_eq!(lhs <= rhs, expected);
+    }
+
+    #[test_case(1_000, 2_000, Ordering::Less; "when lhs is lesser")]
+    #[test_case(1_000, 1_000, Ordering::Equal; "when both are equal")]
+    #[test_case(2_000, 1_000, Ordering::Greater; "when lhs is greater")]
+    fn test_cmp(lhs: u32, rhs: u32, expected: Ordering) {
+        let lhs = Resistance::from_milli_ohms(lhs);
+        let rhs = Resistance::from_milli_ohms(rhs);
+        assert_eq!(lhs.cmp(&rhs), expected);
+    }
+
+    #[test]
+    fn test_add_operator() {
+        let lhs = Resistance::from_milli_ohms(1_000);
+        let rhs = Resistance::from_milli_ohms(2_000);
+        let expected = Resistance::from_milli_ohms(3_000);
+        assert_eq!(lhs + rhs, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Overflow when adding resistance value")]
+    fn test_add_operator_overflow() {
+        let _r = Resistance::from_milli_ohms(u32::MAX) + Resistance::from_milli_ohms(1_000);
+    }
+
+    #[test]
+    fn test_sub_operator() {
+        let lhs = Resistance::from_milli_ohms(3_000);
+        let rhs = Resistance::from_milli_ohms(1_000);
+        let expected = Resistance::from_milli_ohms(2_000);
+        assert_eq!(lhs - rhs, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Overflow when subtracting resistance value")]
+    fn test_sub_operator_underflow() {
+        let _r = Resistance::from_milli_ohms(0) - Resistance::from_milli_ohms(1_000);
+    }
+
+    #[test]
+    fn test_mul_operator_u32() {
+        let r = Resistance::from_milli_ohms(1_000);
+        let expected = Resistance::from_milli_ohms(10_000);
+        assert_eq!(r * 10u32, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Overflow when multiplying resistance value")]
+    fn test_mul_operator_u32_overflow() {
+        let _r = Resistance::from_milli_ohms(u32::MAX) * 2u32;
+    }
+
+    #[test]
+    fn test_mul_operator_f32() {
+        let r = Resistance::from_milli_ohms(1_000);
+        let expected = Resistance::from_milli_ohms(2_500);
+        assert_eq!(r * 2.5f32, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot multiply resistance value by negative value")]
+    fn test_mul_operator_f32_negative() {
+        let _r = Resistance::from_milli_ohms(1_000) * -1f32;
+    }
+
+    #[test_case(f32::INFINITY; "positive infinity")]
+    #[test_case(f32::NEG_INFINITY; "negative infinity")]
+    #[should_panic(expected = "Cannot multiply resistance value by infinity")]
+    fn test_mul_operator_f32_infinity(infinity: f32) {
+        let _r = Resistance::from_milli_ohms(1_000) * infinity;
+    }
+
+    #[test_case(f32::NAN; "NaN")]
+    #[should_panic(expected = "Cannot multiply resistance value by NaN")]
+    fn test_mul_operator_f32_nan(nan: f32) {
+        let _r = Resistance::from_milli_ohms(1_000) * nan;
+    }
+
+    #[test]
+    fn test_div_operator_u32() {
+        let r = Resistance::from_milli_ohms(10_000);
+        let expected = Resistance::from_milli_ohms(1_000);
+        assert_eq!(r / 10u32, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot divide resistance value by zero")]
+    fn test_div_operator_u32_by_zero() {
+        let _r = Resistance::from_milli_ohms(1_000) / 0;
+    }
+
+    #[test]
+    fn test_div_operator_f32() {
+        let r = Resistance::from_milli_ohms(2_500);
+        let expected = Resistance::from_milli_ohms(1_000);
+        assert_eq!(r / 2.5f32, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot divide resistance value by zero")]
+    fn test_div_operator_f32_by_zero() {
+        let _r = Resistance::from_milli_ohms(1_000) / 0f32;
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot divide resistance value by negative value")]
+    fn test_div_operator_f32_negative() {
+        let _r = Resistance::from_milli_ohms(1_000) / -1f32;
+    }
+
+    #[test_case(f32::INFINITY; "positive infinity")]
+    #[test_case(f32::NEG_INFINITY; "negative infinity")]
+    #[should_panic(expected = "Cannot divide resistance value by infinity")]
+    fn test_div_operator_f32_infinity(infinity: f32) {
+        let _r = Resistance::from_milli_ohms(1_000) / infinity;
+    }
+
+    #[test_case(f32::NAN; "NaN")]
+    #[should_panic(expected = "Cannot divide resistance value by NaN")]
+    fn test_div_operator_f32_nan(nan: f32) {
+        let _r = Resistance::from_milli_ohms(1_000) / nan;
+    }
+
+    #[test]
+    fn test_milli_ohms_u32() {
+        let r = 1_000u32.milli_ohms();
+        assert_eq!(r.milli_ohms(), 1_000u32);
+    }
+
+    #[test]
+    fn test_ohms_u32() {
+        let r = 1_000u32.ohms();
+        assert_eq!(r.ohms(), 1_000f32);
+    }
+
+    #[test]
+    fn test_kilo_ohms_u32() {
+        let r = 1_000u32.kilo_ohms();
+        assert_eq!(r.kilo_ohms(), 1_000f32);
+    }
+
+    #[test]
+    fn test_mega_ohms_u32() {
+        let r = 2u32.mega_ohms();
+        assert_eq!(r.mega_ohms(), 2f32);
+    }
+
+    #[test]
+    #[should_panic(expected = "Overflow when converting megaohms to milliohms")]
+    fn test_mega_ohms_u32_overflow() {
+        let _r = 10u32.mega_ohms();
+    }
+
+    #[test]
+    fn test_milli_ohms_f32() {
+        let r = 1_000f32.milli_ohms();
+        assert_eq!(r.milli_ohms(), 1_000u32);
+    }
+
+    #[test]
+    #[should_panic(expected = "Value cannot be negative")]
+    fn test_milli_ohms_f32_negative() {
+        let _r = (-1f32).milli_ohms();
+    }
+
+    #[test]
+    fn test_ohms_f32() {
+        let r = 1_000f32.ohms();
+        assert_eq!(r.ohms(), 1_000f32);
+    }
+
+    #[test]
+    #[should_panic(expected = "Value cannot be negative")]
+    fn test_ohms_f32_negative() {
+        let _r = (-1f32).ohms();
+    }
+
+    #[test]
+    fn test_kilo_ohms_f32() {
+        let r = 1_000f32.kilo_ohms();
+        assert_eq!(r.kilo_ohms(), 1_000f32);
+    }
+
+    #[test]
+    #[should_panic(expected = "Value cannot be negative")]
+    fn test_kilo_ohms_f32_negative() {
+        let _r = (-1f32).kilo_ohms();
+    }
+
+    #[test]
+    fn test_mega_ohms_f32() {
+        let r = 2f32.mega_ohms();
+        assert_eq!(r.mega_ohms(), 2f32);
+    }
+
+    #[test]
+    #[should_panic(expected = "Value cannot be negative")]
+    fn test_mega_ohms_f32_negative() {
+        let _r = (-1f32).mega_ohms();
+    }
+
+    #[test]
+    #[should_panic(expected = "Overflow when converting megaohms to milliohms")]
+    fn test_mega_ohms_f32_overflow() {
+        let _r = 10f32.mega_ohms();
     }
 }
