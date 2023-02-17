@@ -1,6 +1,6 @@
 [package]
 name = "ohms"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Erik Rogers <erik@underlogic.tech>"]
 edition = "2021"
 repository = "https://github.com/UnderLogic/ohms"
