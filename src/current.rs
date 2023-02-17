@@ -218,6 +218,9 @@ impl ops::Div<u32> for Current {
 
     #[inline]
     fn div(self, other: u32) -> Current {
+        if other == 0 {
+            panic!("Cannot divide current value by zero");
+        }
         self.microamps
             .checked_div(other)
             .map(Current::from_micro_amps)
@@ -231,6 +234,7 @@ impl ops::Div<f32> for Current {
     #[inline]
     fn div(self, other: f32) -> Current {
         let microamps = match other {
+            _ if other == 0f32 => panic!("Cannot divide current value by zero"),
             _ if other.is_infinite() => {
                 panic!("Cannot divide current value by infinity")
             }
@@ -238,7 +242,6 @@ impl ops::Div<f32> for Current {
             _ if other.is_sign_negative() => {
                 panic!("Cannot divide current value by negative value")
             }
-            _ if other == 0f32 => panic!("Cannot divide current value by zero"),
             _ => helpers::checked_div_unsigned_f32(self.microamps, other),
         };
 
@@ -320,5 +323,269 @@ impl ExtF32 for f32 {
         let milliamps = helpers::checked_mul_unsigned_f32(1_000_000, self)
             .expect("Overflow when converting amps to microamps");
         Current::from_micro_amps(milliamps)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use core::cmp::Ordering;
+    use test_case::test_case;
+
+    #[test]
+    fn test_from_micro_amps() {
+        let c = Current::from_micro_amps(1_000);
+        assert_eq!(c.micro_amps(), 1_000);
+    }
+
+    #[test]
+    fn test_micro_amps() {
+        let c = Current::from_micro_amps(1_000);
+        assert_eq!(c.micro_amps(), 1_000);
+    }
+
+    #[test]
+    fn test_milli_amps() {
+        let c = Current::from_micro_amps(1_000);
+        assert_eq!(c.milli_amps(), 1f32);
+    }
+
+    #[test]
+    fn test_amps() {
+        let c = Current::from_micro_amps(1_000_000);
+        assert_eq!(c.amps(), 1f32);
+    }
+
+    #[test_case(0, true; "when current is zero")]
+    #[test_case(1_000, false; "when current is not zero")]
+    fn test_is_zero(current: u32, expected: bool) {
+        let c = Current::from_micro_amps(current);
+        assert_eq!(c.is_zero(), expected);
+    }
+
+    #[test]
+    fn test_zero() {
+        let c = Current::zero();
+        assert_eq!(c.micro_amps(), 0);
+    }
+
+    #[test_case(0, 0, true; "when both are zero")]
+    #[test_case(1_000, 1_000, true; "when lhs equals rhs")]
+    #[test_case(1_000, 2_000, false; "when lhs does not equal rhs")]
+    fn test_eq(lhs: u32, rhs: u32, expected: bool) {
+        let lhs = Current::from_micro_amps(lhs);
+        let rhs = Current::from_micro_amps(rhs);
+        assert_eq!(lhs == rhs, expected);
+    }
+
+    #[test_case(1_000, 1_000, false; "when both are equal")]
+    #[test_case(2_000, 1_000, true; "when lhs is greater")]
+    #[test_case(1_000, 2_000, false; "when rhs is greater")]
+    fn test_gt(lhs: u32, rhs: u32, expected: bool) {
+        let lhs = Current::from_micro_amps(lhs);
+        let rhs = Current::from_micro_amps(rhs);
+        assert_eq!(lhs > rhs, expected);
+    }
+
+    #[test_case(1_000, 1_000, true; "when both are equal")]
+    #[test_case(2_000, 1_000, true; "when lhs is greater")]
+    #[test_case(1_000, 2_000, false; "when rhs is greater")]
+    fn test_gte(lhs: u32, rhs: u32, expected: bool) {
+        let lhs = Current::from_micro_amps(lhs);
+        let rhs = Current::from_micro_amps(rhs);
+        assert_eq!(lhs >= rhs, expected);
+    }
+
+    #[test_case(1_000, 1_000, false; "when both are equal")]
+    #[test_case(1_000, 2_000, true; "when lhs is lesser")]
+    #[test_case(2_000, 1_000, false; "when rhs is lesser")]
+    fn test_lt(lhs: u32, rhs: u32, expected: bool) {
+        let lhs = Current::from_micro_amps(lhs);
+        let rhs = Current::from_micro_amps(rhs);
+        assert_eq!(lhs < rhs, expected);
+    }
+
+    #[test_case(1_000, 1_000, true; "when both are equal")]
+    #[test_case(1_000, 2_000, true; "when lhs is lesser")]
+    #[test_case(2_000, 1_000, false; "when rhs is lesser")]
+    fn test_lte(lhs: u32, rhs: u32, expected: bool) {
+        let lhs = Current::from_micro_amps(lhs);
+        let rhs = Current::from_micro_amps(rhs);
+        assert_eq!(lhs <= rhs, expected);
+    }
+
+    #[test_case(1_000, 2_000, Ordering::Less; "when lhs is lesser")]
+    #[test_case(1_000, 1_000, Ordering::Equal; "when both are equal")]
+    #[test_case(2_000, 1_000, Ordering::Greater; "when lhs is greater")]
+    fn test_cmp(lhs: u32, rhs: u32, expected: Ordering) {
+        let lhs = Current::from_micro_amps(lhs);
+        let rhs = Current::from_micro_amps(rhs);
+        assert_eq!(lhs.cmp(&rhs), expected);
+    }
+
+    #[test]
+    fn test_add_operator() {
+        let lhs = Current::from_micro_amps(1_000);
+        let rhs = Current::from_micro_amps(2_000);
+        let expected = Current::from_micro_amps(3_000);
+        assert_eq!(lhs + rhs, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Overflow when adding current value")]
+    fn test_add_operator_overflow() {
+        let _c = Current::from_micro_amps(u32::MAX) + Current::from_micro_amps(1_000);
+    }
+
+    #[test]
+    fn test_sub_operator() {
+        let lhs = Current::from_micro_amps(3_000);
+        let rhs = Current::from_micro_amps(1_000);
+        let expected = Current::from_micro_amps(2_000);
+        assert_eq!(lhs - rhs, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Overflow when subtracting current value")]
+    fn test_sub_operator_underflow() {
+        let _c = Current::from_micro_amps(0) - Current::from_micro_amps(1_000);
+    }
+
+    #[test]
+    fn test_mul_operator_u32() {
+        let c = Current::from_micro_amps(1_000);
+        let expected = Current::from_micro_amps(10_000);
+        assert_eq!(c * 10u32, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Overflow when multiplying current value")]
+    fn test_mul_operator_u32_overflow() {
+        let _c = Current::from_micro_amps(u32::MAX) * 2u32;
+    }
+
+    #[test]
+    fn test_mul_operator_f32() {
+        let c = Current::from_micro_amps(1_000);
+        let expected = Current::from_micro_amps(2_500);
+        assert_eq!(c * 2.5f32, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot multiply current value by negative value")]
+    fn test_mul_operator_f32_negative() {
+        let _c = Current::from_micro_amps(1_000) * -1f32;
+    }
+
+    #[test_case(f32::INFINITY; "positive infinity")]
+    #[test_case(f32::NEG_INFINITY; "negative infinity")]
+    #[should_panic(expected = "Cannot multiply current value by infinity")]
+    fn test_mul_operator_f32_infinity(infinity: f32) {
+        let _c = Current::from_micro_amps(1_000) * infinity;
+    }
+
+    #[test_case(f32::NAN; "NaN")]
+    #[should_panic(expected = "Cannot multiply current value by NaN")]
+    fn test_mul_operator_f32_nan(nan: f32) {
+        let _c = Current::from_micro_amps(1_000) * nan;
+    }
+
+    #[test]
+    fn test_div_operator_u32() {
+        let c = Current::from_micro_amps(10_000);
+        let expected = Current::from_micro_amps(1_000);
+        assert_eq!(c / 10u32, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot divide current value by zero")]
+    fn test_div_operator_u32_by_zero() {
+        let _c = Current::from_micro_amps(1_000) / 0;
+    }
+
+    #[test]
+    fn test_div_operator_f32() {
+        let c = Current::from_micro_amps(2_500);
+        let expected = Current::from_micro_amps(1_000);
+        assert_eq!(c / 2.5f32, expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot divide current value by zero")]
+    fn test_div_operator_f32_by_zero() {
+        let _c = Current::from_micro_amps(1_000) / 0f32;
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot divide current value by negative value")]
+    fn test_div_operator_f32_negative() {
+        let _c = Current::from_micro_amps(1_000) / -1f32;
+    }
+
+    #[test_case(f32::INFINITY; "positive infinity")]
+    #[test_case(f32::NEG_INFINITY; "negative infinity")]
+    #[should_panic(expected = "Cannot divide current value by infinity")]
+    fn test_div_operator_f32_infinity(infinity: f32) {
+        let _c = Current::from_micro_amps(1_000) / infinity;
+    }
+
+    #[test_case(f32::NAN; "NaN")]
+    #[should_panic(expected = "Cannot divide current value by NaN")]
+    fn test_div_operator_f32_nan(nan: f32) {
+        let _c = Current::from_micro_amps(1_000) / nan;
+    }
+
+    #[test]
+    fn test_micro_amps_u32() {
+        let c = 1_000u32.micro_amps();
+        assert_eq!(c.micro_amps(), 1_000u32);
+    }
+
+    #[test]
+    fn test_milli_amps_u32() {
+        let c = 1_000u32.milli_amps();
+        assert_eq!(c.milli_amps(), 1_000f32);
+    }
+
+    #[test]
+    fn test_amps_u32() {
+        let c = 1_000u32.amps();
+        assert_eq!(c.amps(), 1_000f32);
+    }
+
+    #[test]
+    fn test_micro_amps_f32() {
+        let c = 1_000f32.micro_amps();
+        assert_eq!(c.micro_amps(), 1_000u32);
+    }
+
+    #[test]
+    #[should_panic(expected = "Value cannot be negative")]
+    fn test_micro_amps_f32_negative() {
+        let _c = (-1f32).micro_amps();
+    }
+
+    #[test]
+    fn test_milli_amps_f32() {
+        let c = 1_000f32.milli_amps();
+        assert_eq!(c.milli_amps(), 1_000f32);
+    }
+
+    #[test]
+    #[should_panic(expected = "Value cannot be negative")]
+    fn test_milli_amps_f32_negative() {
+        let _c = (-1f32).milli_amps();
+    }
+
+    #[test]
+    fn test_amps_f32() {
+        let c = 1_000f32.amps();
+        assert_eq!(c.amps(), 1_000f32);
+    }
+
+    #[test]
+    #[should_panic(expected = "Value cannot be negative")]
+    fn test_amps_f32_negative() {
+        let _c = (-1f32).amps();
     }
 }
