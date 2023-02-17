@@ -13,7 +13,7 @@ use core::{cmp, ops};
 /// extension methods on `u32` and `f32`:
 ///
 /// ```rust
-/// use ohms::*;
+/// use ohms::prelude::*;
 ///
 /// let r1 = Resistance::from_milli_ohms(1000); // 1Ω
 ///
@@ -28,7 +28,7 @@ use core::{cmp, ops};
 /// You can compare two `Resistance` values using the `==`, `!=`, `<`, `>`, `<=` and `>=` operators.
 ///
 /// ```rust
-/// use ohms::*;
+/// use ohms::prelude::*;
 ///
 /// let r1 = 220u32.ohms(); // 220Ω
 /// let r2 = 4.7f32.kilo_ohms(); // 4.7kΩ
@@ -47,7 +47,7 @@ use core::{cmp, ops};
 /// If the result of the operation would overflow or underflow the `u32` value, the operation will panic.
 ///
 /// ```rust
-/// use ohms::*;
+/// use ohms::prelude::*;
 ///
 /// let r1 = 220u32.ohms(); // 220Ω
 /// let r2 = 4.7f32.kilo_ohms(); // 4.7kΩ
@@ -65,7 +65,7 @@ use core::{cmp, ops};
 /// If the result of the operation would be infinite or NaN, the operation will panic.
 ///
 /// ```rust
-/// use ohms::*;
+/// use ohms::prelude::*;
 ///
 /// let r1 = 220u32.ohms(); // 220Ω
 /// let r2 = r1 * 3; // 660Ω
@@ -79,7 +79,7 @@ use core::{cmp, ops};
 /// value to a `u32` or `f32` value in the specified denomination.
 ///
 /// ```rust
-/// use ohms::*;
+/// use ohms::prelude::*;
 ///
 /// let r1 = 47.5f32.ohms(); // 47.5Ω
 ///
