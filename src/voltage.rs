@@ -1,4 +1,4 @@
-use core::{cmp, ops};
+use core::{cmp, fmt, ops};
 
 /// Represents a voltage value, stored as whole microvolts (μV) stored in an `i64` value.
 /// This value can be positive or negative.
@@ -438,3 +438,23 @@ macro_rules! impl_voltage_from_float {
 
 impl_voltage_from_float!(f32);
 impl_voltage_from_float!(f64);
+
+impl fmt::Display for Voltage {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let sign = if self.raw < 0 { "-" } else { "" };
+        let microvolts = self.micro_volts().abs() as f64;
+        let kilovolts = microvolts / 1_000_000_000f64;
+        let volts = microvolts / 1_000_000f64;
+        let millivolts = microvolts / 1_000f64;
+
+        if kilovolts >= 1f64 {
+            write!(f, "{sign}{kilovolts:.2} kV")
+        } else if volts >= 1f64 {
+            write!(f, "{sign}{volts:.2} V")
+        } else if millivolts > 0f64 {
+            write!(f, "{sign}{millivolts:.2}mV")
+        } else {
+            write!(f, "{sign}{microvolts:.2}μV")
+        }
+    }
+}
