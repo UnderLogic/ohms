@@ -2,6 +2,7 @@ pub use crate::current::{
     Current, FromFloat as CurrentFromFloat, FromInteger as CurrentFromInteger,
 };
 pub use crate::law::*;
+pub use crate::power::{FromFloat as PowerFromFloat, FromInteger as PowerFromInteger, Power};
 pub use crate::resistance::{
     FromFloat as ResistanceFromFloat, FromInteger as ResistanceFromInteger, Resistance,
 };

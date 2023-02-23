@@ -1,6 +1,6 @@
 use core::{cmp, fmt, ops};
 
-/// Represents a voltage value, stored as whole microvolts (μV) stored in an `i64` value.
+/// Represents a voltage value, stored as whole microvolts (μV) as a signed 64-bit value.
 /// This value can be positive or negative.
 ///
 /// **Reminder:** `1000 μV = 1 mV, 1000 mV = 1 V, 1000 V = 1k V`
@@ -32,9 +32,9 @@ use core::{cmp, fmt, ops};
 /// let v2 = 5.2.volts(); // 5.2V
 ///
 /// if v1 > v2 {
-///     println!("{:?} is greater than {:?}", v1, v2);
+///     println!("{} is greater than {}", v1, v2);
 /// } else {
-///     println!("{:?} is less than or equal to {:?}", v1, v2);
+///     println!("{} is less than or equal to {}", v1, v2);
 /// }
 /// ```
 ///
@@ -50,8 +50,8 @@ use core::{cmp, fmt, ops};
 /// let v1 = 3.7.volts(); // 3.7V
 /// let v2 = 9.volts(); // 9V
 ///
-/// let v3 = v1 + v2; // 12.7V
-/// let v4 = v2 - 6.volts(); // 3V
+/// let sum = v1 + v2; // 12.7V
+/// let diff = v2 - 6.volts(); // 3V
 /// ```
 ///
 /// # Scaling Voltage values
@@ -81,7 +81,7 @@ use core::{cmp, fmt, ops};
 ///
 /// let v1 = 3.3.volts(); // 3.3V
 ///
-/// println!("{:.2}V is {:.1}mV", v1.volts(), v1.milli_volts());
+/// println!("{:.2} V is {:.1} mV", v1.volts(), v1.milli_volts());
 /// ```
 ///
 #[derive(Clone, Copy, Debug)]
@@ -95,8 +95,8 @@ impl Voltage {
     /// It is recommended to use the `micro_volts`, `milli_volts`, `volts`, and `kilo_volts` extension
     /// methods on integer and floating-point types instead.
     #[inline]
-    pub const fn from_micro_volts(value: i64) -> Voltage {
-        Voltage { raw: value }
+    pub const fn from_micro_volts(value: i64) -> Self {
+        Self { raw: value }
     }
 
     /// Returns the voltage value in whole microvolts (μV).
@@ -147,26 +147,26 @@ impl Voltage {
 
     /// Returns the absolute value of the voltage value.
     #[inline]
-    pub const fn abs(&self) -> Voltage {
-        Voltage::from_micro_volts(self.raw.abs())
+    pub const fn abs(&self) -> Self {
+        Self::from_micro_volts(self.raw.abs())
     }
 
     /// Inverts the voltage value from positive to negative or negative to positive.
     #[inline]
-    pub const fn invert(&self) -> Voltage {
-        Voltage::from_micro_volts(self.raw * -1)
+    pub const fn invert(&self) -> Self {
+        Self::from_micro_volts(self.raw * -1)
     }
 
     /// Returns a `Voltage` value of zero volts (0V).
     #[inline]
     pub const fn zero() -> Self {
-        Voltage::from_micro_volts(0)
+        Self::from_micro_volts(0)
     }
 }
 
 impl PartialEq for Voltage {
     #[inline]
-    fn eq(&self, other: &Voltage) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         self.raw == other.raw
     }
 }
@@ -175,40 +175,40 @@ impl Eq for Voltage {}
 
 impl PartialOrd for Voltage {
     #[inline]
-    fn partial_cmp(&self, other: &Voltage) -> Option<cmp::Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
         self.raw.partial_cmp(&other.raw)
     }
 }
 
 impl Ord for Voltage {
     #[inline]
-    fn cmp(&self, other: &Voltage) -> cmp::Ordering {
+    fn cmp(&self, other: &Self) -> cmp::Ordering {
         self.raw.cmp(&other.raw)
     }
 }
 
 impl ops::Add for Voltage {
-    type Output = Voltage;
+    type Output = Self;
 
     /// Adds two `Voltage` values together, returning a new `Voltage` value.
     #[inline]
-    fn add(self, other: Voltage) -> Voltage {
+    fn add(self, other: Self) -> Self {
         self.raw
             .checked_add(other.raw)
-            .map(Voltage::from_micro_volts)
+            .map(Self::from_micro_volts)
             .expect("Overflow when adding voltage values")
     }
 }
 
 impl ops::Sub for Voltage {
-    type Output = Voltage;
+    type Output = Self;
 
     /// Subtracts the `Voltage` value from another, returning a new `Voltage` value.
     #[inline]
-    fn sub(self, other: Voltage) -> Voltage {
+    fn sub(self, other: Self) -> Self {
         self.raw
             .checked_sub(other.raw)
-            .map(Voltage::from_micro_volts)
+            .map(Self::from_micro_volts)
             .expect("Overflow when subtracting voltage values")
     }
 }
@@ -216,14 +216,14 @@ impl ops::Sub for Voltage {
 macro_rules! impl_mul_for_integer {
     ($i: ty) => {
         impl ops::Mul<$i> for Voltage {
-            type Output = Voltage;
+            type Output = Self;
 
             /// Multiplies the `Voltage` value by an integer value, returning a new `Voltage` value.
             #[inline]
-            fn mul(self, other: $i) -> Voltage {
+            fn mul(self, other: $i) -> Self {
                 self.raw
                     .checked_mul(other as i64)
-                    .map(Voltage::from_micro_volts)
+                    .map(Self::from_micro_volts)
                     .expect("Overflow when multiplying voltage value")
             }
         }
@@ -240,21 +240,21 @@ impl_mul_for_integer!(i32);
 impl_mul_for_integer!(i64);
 
 impl ops::Mul<f32> for Voltage {
-    type Output = Voltage;
+    type Output = Self;
 
     /// Multiplies the `Voltage` value by a floating-point value, returning a new `Voltage` value.
     #[inline]
-    fn mul(self, scale_factor: f32) -> Voltage {
+    fn mul(self, scale_factor: f32) -> Self {
         self * scale_factor as f64
     }
 }
 
 impl ops::Mul<f64> for Voltage {
-    type Output = Voltage;
+    type Output = Self;
 
     /// Multiplies the `Voltage` value by a floating-point value, returning a new `Voltage` value.
     #[inline]
-    fn mul(self, scale_factor: f64) -> Voltage {
+    fn mul(self, scale_factor: f64) -> Self {
         let result = match scale_factor {
             _ if scale_factor.is_infinite() => {
                 panic!("Cannot multiply voltage value by infinity")
@@ -263,24 +263,24 @@ impl ops::Mul<f64> for Voltage {
             _ => self.raw as f64 * scale_factor,
         };
 
-        Voltage::from_micro_volts(result as i64)
+        Self::from_micro_volts(result as i64)
     }
 }
 
 macro_rules! impl_div_for_integer {
     ($i: ty) => {
         impl ops::Div<$i> for Voltage {
-            type Output = Voltage;
+            type Output = Self;
 
             /// Divides the `Voltage` value by an integer value, returning a new `Voltage` value.
             #[inline]
-            fn div(self, divisor: $i) -> Voltage {
+            fn div(self, divisor: $i) -> Self {
                 if divisor == 0 {
                     panic!("Cannot divide voltage value by zero");
                 }
                 self.raw
                     .checked_div(divisor as i64)
-                    .map(Voltage::from_micro_volts)
+                    .map(Self::from_micro_volts)
                     .expect("Overflow when dividing voltage value")
             }
         }
@@ -297,21 +297,21 @@ impl_div_for_integer!(i32);
 impl_div_for_integer!(i64);
 
 impl ops::Div<f32> for Voltage {
-    type Output = Voltage;
+    type Output = Self;
 
     /// Divides the `Voltage` value by a floating-point value, returning a new `Voltage` value.
     #[inline]
-    fn div(self, divisor: f32) -> Voltage {
+    fn div(self, divisor: f32) -> Self {
         self / divisor as f64
     }
 }
 
 impl ops::Div<f64> for Voltage {
-    type Output = Voltage;
+    type Output = Self;
 
     /// Divides the `Voltage` value by a floating-point value, returning a new `Voltage` value.
     #[inline]
-    fn div(self, divisor: f64) -> Voltage {
+    fn div(self, divisor: f64) -> Self {
         let result = match divisor {
             _ if divisor == 0f64 => panic!("Cannot divide voltage value by zero"),
             _ if divisor.is_infinite() => {
@@ -321,7 +321,7 @@ impl ops::Div<f64> for Voltage {
             _ => (self.raw as f64) / divisor,
         };
 
-        Voltage::from_micro_volts(result as i64)
+        Self::from_micro_volts(result as i64)
     }
 }
 

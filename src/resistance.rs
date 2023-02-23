@@ -1,7 +1,7 @@
 use crate::assert_positive_float;
 use core::{cmp, fmt, ops};
 
-/// Represents a resistance value, stored as whole milliohms (mΩ) stored in a `u64` value.
+/// Represents a resistance value, stored as whole milliohms (mΩ) as a 64-bit value.
 /// This value can only be positive.
 ///
 /// **Reminder:** `1000 mΩ = 1 Ω, 1000 Ω = 1 kΩ, 1000 kΩ = 1 MΩ`
@@ -34,9 +34,9 @@ use core::{cmp, fmt, ops};
 /// let r2 = 4.7.kilo_ohms(); // 4.7kΩ
 ///
 /// if r1 > r2 {
-///     println!("{:?} is greater than {:?}", r1, r2);
+///     println!("{} is greater than {}", r1, r2);
 /// } else {
-///     println!("{:?} is less than or equal to {:?}", r1, r2);
+///     println!("{} is less than or equal to {}", r1, r2);
 /// }
 /// ```
 ///
@@ -52,8 +52,8 @@ use core::{cmp, fmt, ops};
 /// let r1 = 220.ohms(); // 220Ω
 /// let r2 = 4.7.kilo_ohms(); // 4.7kΩ
 ///
-/// let r3 = r1 + r2; // 4.92kΩ
-/// let r4 = r2 - 2.kilo_ohms(); // 2.7kΩ
+/// let sum = r1 + r2; // 4.92kΩ
+/// let diff = r2 - 2.kilo_ohms(); // 2.7kΩ
 /// ```
 ///
 /// # Scaling Resistance values
@@ -83,7 +83,7 @@ use core::{cmp, fmt, ops};
 ///
 /// let r1 = 47.5.ohms(); // 47.5Ω
 ///
-/// println!("{:.3}kΩ is {:.1}Ω", r1.kilo_ohms(), r1.ohms());
+/// println!("{:.3} kΩ is {:.1} Ω", r1.kilo_ohms(), r1.ohms());
 /// ```
 ///
 #[derive(Clone, Copy, Debug)]
@@ -97,8 +97,8 @@ impl Resistance {
     /// It is recommended to use the `milli_ohms`, `ohms`, `kilo_ohms` and `mega_ohms` extension
     /// methods on integer and floating-point values instead.
     #[inline]
-    pub const fn from_milli_ohms(value: u64) -> Resistance {
-        Resistance { raw: value }
+    pub const fn from_milli_ohms(value: u64) -> Self {
+        Self { raw: value }
     }
 
     /// Returns the resistance value in whole milliohms (mΩ).
@@ -134,13 +134,13 @@ impl Resistance {
     /// Returns a `Resistance` value of zero ohms (0Ω).
     #[inline]
     pub const fn zero() -> Self {
-        Resistance::from_milli_ohms(0)
+        Self::from_milli_ohms(0)
     }
 }
 
 impl PartialEq for Resistance {
     #[inline]
-    fn eq(&self, other: &Resistance) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         self.raw == other.raw
     }
 }
@@ -149,27 +149,27 @@ impl Eq for Resistance {}
 
 impl PartialOrd for Resistance {
     #[inline]
-    fn partial_cmp(&self, other: &Resistance) -> Option<cmp::Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
         self.raw.partial_cmp(&other.raw)
     }
 }
 
 impl Ord for Resistance {
     #[inline]
-    fn cmp(&self, other: &Resistance) -> cmp::Ordering {
+    fn cmp(&self, other: &Self) -> cmp::Ordering {
         self.raw.cmp(&other.raw)
     }
 }
 
 impl ops::Add for Resistance {
-    type Output = Resistance;
+    type Output = Self;
 
     /// Adds two `Resistance` values together, returning a new `Resistance` value.
     #[inline]
-    fn add(self, other: Resistance) -> Resistance {
+    fn add(self, other: Self) -> Self {
         self.raw
             .checked_add(other.raw)
-            .map(Resistance::from_milli_ohms)
+            .map(Self::from_milli_ohms)
             .expect("Overflow when adding resistance values")
     }
 }
@@ -179,10 +179,10 @@ impl ops::Sub for Resistance {
 
     /// Subtracts one `Resistance` value from another, returning a new `Resistance` value.
     #[inline]
-    fn sub(self, other: Resistance) -> Resistance {
+    fn sub(self, other: Self) -> Self {
         self.raw
             .checked_sub(other.raw)
-            .map(Resistance::from_milli_ohms)
+            .map(Self::from_milli_ohms)
             .expect("Overflow when subtracting resistance values")
     }
 }
@@ -190,18 +190,18 @@ impl ops::Sub for Resistance {
 macro_rules! impl_mul_for_integer {
     ($i:ty) => {
         impl ops::Mul<$i> for Resistance {
-            type Output = Resistance;
+            type Output = Self;
 
             /// Multiplies a `Resistance` value by an integer value, returning a new `Resistance` value.
             #[inline]
             #[allow(unused_comparisons)]
-            fn mul(self, scale_factor: $i) -> Resistance {
+            fn mul(self, scale_factor: $i) -> Self {
                 if scale_factor < 0 {
                     panic!("Cannot multiply resistance value by negative value");
                 }
                 self.raw
                     .checked_mul(scale_factor as u64)
-                    .map(Resistance::from_milli_ohms)
+                    .map(Self::from_milli_ohms)
                     .expect("Overflow when multiplying resistance value")
             }
         }
@@ -218,21 +218,21 @@ impl_mul_for_integer!(i32);
 impl_mul_for_integer!(i64);
 
 impl ops::Mul<f32> for Resistance {
-    type Output = Resistance;
+    type Output = Self;
 
     /// Multiplies the `Resistance` value by a floating-point value, returning a new `Resistance` value.
     #[inline]
-    fn mul(self, scale_factor: f32) -> Resistance {
+    fn mul(self, scale_factor: f32) -> Self {
         self * scale_factor as f64
     }
 }
 
 impl ops::Mul<f64> for Resistance {
-    type Output = Resistance;
+    type Output = Self;
 
     /// Multiplies a `Resistance` value by a floating-point value, returning a new `Resistance` value.
     #[inline]
-    fn mul(self, scale_factor: f64) -> Resistance {
+    fn mul(self, scale_factor: f64) -> Self {
         let result = match scale_factor {
             _ if scale_factor.is_infinite() => {
                 panic!("Cannot multiply resistance value by infinity")
@@ -244,19 +244,19 @@ impl ops::Mul<f64> for Resistance {
             _ => self.raw as f64 * scale_factor,
         };
 
-        Resistance::from_milli_ohms(result as u64)
+        Self::from_milli_ohms(result as u64)
     }
 }
 
 macro_rules! impl_div_for_integer {
     ($i:ty) => {
         impl ops::Div<$i> for Resistance {
-            type Output = Resistance;
+            type Output = Self;
 
             /// Divides a `Resistance` value by an integer value, returning a new `Resistance` value.
             #[inline]
             #[allow(unused_comparisons)]
-            fn div(self, divisor: $i) -> Resistance {
+            fn div(self, divisor: $i) -> Self {
                 if divisor == 0 {
                     panic!("Cannot divide resistance value by zero");
                 } else if divisor < 0 {
@@ -264,7 +264,7 @@ macro_rules! impl_div_for_integer {
                 }
                 self.raw
                     .checked_div(divisor as u64)
-                    .map(Resistance::from_milli_ohms)
+                    .map(Self::from_milli_ohms)
                     .expect("Overflow when dividing resistance value")
             }
         }
@@ -281,21 +281,21 @@ impl_div_for_integer!(i32);
 impl_div_for_integer!(i64);
 
 impl ops::Div<f32> for Resistance {
-    type Output = Resistance;
+    type Output = Self;
 
     /// Divides a `Resistance` value by a floating-point value, returning a new `Resistance` value.
     #[inline]
-    fn div(self, divisor: f32) -> Resistance {
+    fn div(self, divisor: f32) -> Self {
         self / divisor as u64
     }
 }
 
 impl ops::Div<f64> for Resistance {
-    type Output = Resistance;
+    type Output = Self;
 
     /// Divides a `Resistance` value by a floating-point value, returning a new `Resistance` value.
     #[inline]
-    fn div(self, divisor: f64) -> Resistance {
+    fn div(self, divisor: f64) -> Self {
         let result = match divisor {
             _ if divisor == 0f64 => panic!("Cannot divide resistance value by zero"),
             _ if divisor.is_infinite() => {
@@ -308,7 +308,7 @@ impl ops::Div<f64> for Resistance {
             _ => (self.raw as f64) / divisor,
         };
 
-        Resistance::from_milli_ohms(result as u64)
+        Self::from_milli_ohms(result as u64)
     }
 }
 
