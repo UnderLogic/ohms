@@ -3,4 +3,6 @@ pub use crate::law::*;
 pub use crate::resistance::{
     FromFloat as ResistanceFromFloat, FromInteger as ResistanceFromInteger, Resistance,
 };
-pub use crate::voltage::{ExtF32 as VoltageExtF32, ExtI32 as VoltageExtI32, Voltage};
+pub use crate::voltage::{
+    FromFloat as VoltageFromFloat, FromInteger as VoltageFromInteger, Voltage,
+};

@@ -57,7 +57,7 @@ use core::{cmp, ops};
 /// ```
 ///
 /// # Scaling Resistance values
-/// You can use the `*` and `/` operators to scale `Resistance` values by an integer or floating point value.
+/// You can use the `*` and `/` operators to scale `Resistance` values by an integer or floating-point value.
 /// The result is a new `Resistance` value, rounded down to the nearest whole milliohm (mΩ).
 ///
 /// If the result of operation would overflow or underflow, the operation will panic.
@@ -192,13 +192,16 @@ macro_rules! impl_mul_for_integer {
         impl ops::Mul<$i> for Resistance {
             type Output = Resistance;
 
-            /// Scales a `Resistance` value by an integer value, returning a new `Resistance` value.
+            /// Multiplies a `Resistance` value by an integer value, returning a new `Resistance` value.
             #[inline]
             fn mul(self, scale_factor: $i) -> Resistance {
                 if scale_factor < 0 {
                     panic!("Cannot multiply resistance value by negative value");
                 }
-                self * scale_factor as u64
+                self.raw
+                    .checked_mul(scale_factor as u64)
+                    .map(Resistance::from_milli_ohms)
+                    .expect("Overflow when multiplying resistance value")
             }
         }
     };
@@ -207,38 +210,26 @@ macro_rules! impl_mul_for_integer {
 impl_mul_for_integer!(u8);
 impl_mul_for_integer!(u16);
 impl_mul_for_integer!(u32);
+impl_mul_for_integer!(u64);
 impl_mul_for_integer!(i8);
 impl_mul_for_integer!(i16);
 impl_mul_for_integer!(i32);
 impl_mul_for_integer!(i64);
 
-impl ops::Mul<u64> for Resistance {
-    type Output = Resistance;
-
-    /// Scales a `Resistance` value by an integer value, returning a new `Resistance` value.
-    #[inline]
-    fn mul(self, scale_factor: u64) -> Resistance {
-        self.raw
-            .checked_mul(scale_factor)
-            .map(Resistance::from_milli_ohms)
-            .expect("Overflow when multiplying resistance value")
-    }
-}
-
 impl ops::Mul<f32> for Resistance {
     type Output = Resistance;
 
-    /// Scales a `Resistance` value by a floating-point value, returning a new `Resistance` value.
+    /// Multiplies the `Resistance` value by a floating-point value, returning a new `Resistance` value.
     #[inline]
     fn mul(self, scale_factor: f32) -> Resistance {
-        self * scale_factor as u64
+        self * scale_factor as f64
     }
 }
 
 impl ops::Mul<f64> for Resistance {
     type Output = Resistance;
 
-    /// Scales a `Resistance` value by a floating-point value, returning a new `Resistance` value.
+    /// Multiplies a `Resistance` value by a floating-point value, returning a new `Resistance` value.
     #[inline]
     fn mul(self, scale_factor: f64) -> Resistance {
         let result = match scale_factor {
@@ -269,7 +260,10 @@ macro_rules! impl_div_for_integer {
                 } else if divisor < 0 {
                     panic!("Cannot divide resistance value by negative value");
                 }
-                self / divisor as u64
+                self.raw
+                    .checked_div(divisor as u64)
+                    .map(Resistance::from_milli_ohms)
+                    .expect("Overflow when dividing resistance value")
             }
         }
     };
@@ -278,26 +272,11 @@ macro_rules! impl_div_for_integer {
 impl_div_for_integer!(u8);
 impl_div_for_integer!(u16);
 impl_div_for_integer!(u32);
+impl_div_for_integer!(u64);
 impl_div_for_integer!(i8);
 impl_div_for_integer!(i16);
 impl_div_for_integer!(i32);
 impl_div_for_integer!(i64);
-
-impl ops::Div<u64> for Resistance {
-    type Output = Resistance;
-
-    /// Divides a `Resistance` value by an integer value, returning a new `Resistance` value.
-    #[inline]
-    fn div(self, divisor: u64) -> Resistance {
-        if divisor == 0 {
-            panic!("Cannot divide resistance value by zero");
-        }
-        self.raw
-            .checked_div(divisor)
-            .map(Resistance::from_milli_ohms)
-            .expect("Overflow when dividing resistance value")
-    }
-}
 
 impl ops::Div<f32> for Resistance {
     type Output = Resistance;

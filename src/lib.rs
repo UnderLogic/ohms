@@ -61,4 +61,4 @@ pub use law::*;
 pub use resistance::{
     FromFloat as ResistanceFromFloat, FromInteger as ResistanceFromInteger, Resistance,
 };
-pub use voltage::{ExtF32 as VoltageExtF32, ExtI32 as VoltageExtI32, Voltage};
+pub use voltage::{FromFloat as VoltageFromFloat, FromInteger as VoltageFromInteger, Voltage};
