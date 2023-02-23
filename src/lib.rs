@@ -41,10 +41,10 @@
 //! ```rust
 //! use ohms::prelude::*;
 //!
-//! let current = 0.5.milli_amps();
+//! let current = 0.5.amps();
 //! let resistance = 4.7.kilo_ohms();
 //!
-//! let voltage = current * resistance; // 0.5mA * 4.7kΩ = 2.35V
+//! let voltage = current * resistance; // 0.5A * 4.7kΩ = 2.35V
 //! println!("Voltage: {} V", voltage.volts());
 //! ```
 #![no_std]
