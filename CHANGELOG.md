@@ -4,6 +4,27 @@ All notable changes to this library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2023-02-22
+
+### Added
+
+- `Resistance` extension methods for all integer and floating point types via macros
+- `Voltage` extension methods for all integer and floating point types via macros
+- `Current` extension methods for all integer and floating point types via macros
+
+### Changed
+
+- `Resistance` values are now stored as `u64` internally (from `u32`)
+- `Voltage` values are now stored as `i64` internally (from `i32`)
+- `Current` values are now stored as `u64` internally (from `u32`)
+- `Resistance` extension traits renamed to `ResistanceFromInteger` and `ResistanceFromFloat`
+- `Voltage` extension traits renamed to `VoltageFromInteger` and `VoltageFromFloat`
+- `Current` extension traits renamed to `CurrentFromInteger` and `CurrentFromFloat`
+
+### Removed
+
+- Unit tests for `Resistance`, `Voltage`, and `Current`
+
 ## [0.2.0] - 2023-02-17
 
 ### Added

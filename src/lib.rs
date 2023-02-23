@@ -20,7 +20,7 @@
 //! use ohms::prelude::*;
 //!
 //! let voltage = 5.volts();
-//! let current = 1u32.amps();
+//! let current = 1.amps();
 //!
 //! let resistance = voltage / current; // 5V / 1A = 5Ω
 //! println!("Resistance: {} Ω", resistance.ohms());
@@ -41,8 +41,8 @@
 //! ```rust
 //! use ohms::prelude::*;
 //!
-//! let current = 0.5f32.milli_amps();
-//! let resistance = 4.7f32.kilo_ohms();
+//! let current = 0.5.milli_amps();
+//! let resistance = 4.7.kilo_ohms();
 //!
 //! let voltage = current * resistance; // 0.5mA * 4.7kΩ = 2.35V
 //! println!("Voltage: {} V", voltage.volts());
@@ -51,13 +51,14 @@
 
 mod assert;
 mod current;
-mod helpers;
 mod law;
 pub mod prelude;
 mod resistance;
 mod voltage;
 
-pub use current::{Current, ExtF32 as CurrentExtF32, ExtU32 as CurrentExtU32};
+pub use current::{Current, FromFloat as CurrentFromFloat, FromInteger as CurrentFromInteger};
 pub use law::*;
-pub use resistance::{ExtF32 as ResistanceExtF32, ExtU32 as ResistanceExtU32, Resistance};
-pub use voltage::{ExtF32 as VoltageExtF32, ExtI32 as VoltageExtI32, Voltage};
+pub use resistance::{
+    FromFloat as ResistanceFromFloat, FromInteger as ResistanceFromInteger, Resistance,
+};
+pub use voltage::{FromFloat as VoltageFromFloat, FromInteger as VoltageFromInteger, Voltage};
