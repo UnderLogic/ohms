@@ -452,9 +452,9 @@ impl fmt::Display for Voltage {
         } else if volts >= 1f64 {
             write!(f, "{sign}{volts:.2} V")
         } else if millivolts > 0f64 {
-            write!(f, "{sign}{millivolts:.2}mV")
+            write!(f, "{sign}{millivolts:.2} mV")
         } else {
-            write!(f, "{sign}{microvolts:.2}μV")
+            write!(f, "{sign}{microvolts:.2} μV")
         }
     }
 }

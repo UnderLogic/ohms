@@ -406,6 +406,6 @@ impl fmt::Display for Current {
             _ => ((self.raw as f64) / 1_000_000f64, "A"),
         };
 
-        write!(f, "{value:.2}{unit}")
+        write!(f, "{value:.2} {unit}")
     }
 }

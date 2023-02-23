@@ -431,6 +431,6 @@ impl fmt::Display for Resistance {
             _ => ((self.raw as f64) / 1_000_000_000f64, "MΩ"),
         };
 
-        write!(f, "{value:.2}{unit}")
+        write!(f, "{value:.2} {unit}")
     }
 }
