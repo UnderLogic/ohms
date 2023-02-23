@@ -177,7 +177,7 @@ impl ops::Add for Resistance {
 impl ops::Sub for Resistance {
     type Output = Resistance;
 
-    /// Subtracts two `Resistance` values from each other, returning a new `Resistance` value.
+    /// Subtracts one `Resistance` value from another, returning a new `Resistance` value.
     #[inline]
     fn sub(self, other: Resistance) -> Resistance {
         self.raw
@@ -194,6 +194,7 @@ macro_rules! impl_mul_for_integer {
 
             /// Multiplies a `Resistance` value by an integer value, returning a new `Resistance` value.
             #[inline]
+            #[allow(unused_comparisons)]
             fn mul(self, scale_factor: $i) -> Resistance {
                 if scale_factor < 0 {
                     panic!("Cannot multiply resistance value by negative value");
@@ -254,6 +255,7 @@ macro_rules! impl_div_for_integer {
 
             /// Divides a `Resistance` value by an integer value, returning a new `Resistance` value.
             #[inline]
+            #[allow(unused_comparisons)]
             fn div(self, divisor: $i) -> Resistance {
                 if divisor == 0 {
                     panic!("Cannot divide resistance value by zero");
@@ -338,7 +340,7 @@ macro_rules! impl_resistance_from_integer {
                 let milliohms = (self as u64)
                     .checked_mul(1_000)
                     .expect("Overflow when converting ohms to milliohms");
-                Resistance::from_milli_ohms(milliohms as u64)
+                Resistance::from_milli_ohms(milliohms)
             }
 
             #[inline]
@@ -346,7 +348,7 @@ macro_rules! impl_resistance_from_integer {
                 let milliohms = (self as u64)
                     .checked_mul(1_000_000)
                     .expect("Overflow when converting kilohms to milliohms");
-                Resistance::from_milli_ohms(milliohms as u64)
+                Resistance::from_milli_ohms(milliohms)
             }
 
             #[inline]
@@ -354,7 +356,7 @@ macro_rules! impl_resistance_from_integer {
                 let milliohms = (self as u64)
                     .checked_mul(1_000_000_000)
                     .expect("Overflow when converting megaohms to milliohms");
-                Resistance::from_milli_ohms(milliohms as u64)
+                Resistance::from_milli_ohms(milliohms)
             }
         }
     };

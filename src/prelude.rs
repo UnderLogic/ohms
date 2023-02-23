@@ -1,4 +1,6 @@
-pub use crate::current::{Current, ExtF32 as CurrentExtF32, ExtU32 as CurrentExtU32};
+pub use crate::current::{
+    Current, FromFloat as CurrentFromFloat, FromInteger as CurrentFromInteger,
+};
 pub use crate::law::*;
 pub use crate::resistance::{
     FromFloat as ResistanceFromFloat, FromInteger as ResistanceFromInteger, Resistance,

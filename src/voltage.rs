@@ -1,6 +1,6 @@
 use core::{cmp, ops};
 
-/// Represents a voltage value, stored as whole microvolts (μV) stored in a `i64` value.
+/// Represents a voltage value, stored as whole microvolts (μV) stored in an `i64` value.
 /// This value can be positive or negative.
 ///
 /// **Reminder:** `1000 μV = 1 mV, 1000 mV = 1 V, 1000 V = 1k V`
@@ -164,7 +164,6 @@ impl Voltage {
     }
 }
 
-// Equality traits
 impl PartialEq for Voltage {
     #[inline]
     fn eq(&self, other: &Voltage) -> bool {
@@ -174,7 +173,6 @@ impl PartialEq for Voltage {
 
 impl Eq for Voltage {}
 
-// Comparison traits
 impl PartialOrd for Voltage {
     #[inline]
     fn partial_cmp(&self, other: &Voltage) -> Option<cmp::Ordering> {
@@ -189,10 +187,10 @@ impl Ord for Voltage {
     }
 }
 
-// Math operators
 impl ops::Add for Voltage {
     type Output = Voltage;
 
+    /// Adds two `Voltage` values together, returning a new `Voltage` value.
     #[inline]
     fn add(self, other: Voltage) -> Voltage {
         self.raw
@@ -205,6 +203,7 @@ impl ops::Add for Voltage {
 impl ops::Sub for Voltage {
     type Output = Voltage;
 
+    /// Subtracts the `Voltage` value from another, returning a new `Voltage` value.
     #[inline]
     fn sub(self, other: Voltage) -> Voltage {
         self.raw
@@ -351,26 +350,26 @@ macro_rules! impl_voltage_from_integer {
 
             #[inline]
             fn milli_volts(self) -> Voltage {
-                let microvolts = self
+                let microvolts = (self as i64)
                     .checked_mul(1_000)
                     .expect("Overflow when converting millivolts to microvolts");
-                Voltage::from_micro_volts(microvolts as i64)
+                Voltage::from_micro_volts(microvolts)
             }
 
             #[inline]
             fn volts(self) -> Voltage {
-                let microvolts = self
+                let microvolts = (self as i64)
                     .checked_mul(1_000_000)
                     .expect("Overflow when converting volts to microvolts");
-                Voltage::from_micro_volts(microvolts as i64)
+                Voltage::from_micro_volts(microvolts)
             }
 
             #[inline]
             fn kilo_volts(self) -> Voltage {
-                let microvolts = self
+                let microvolts = (self as i64)
                     .checked_mul(1_000_000_000)
                     .expect("Overflow when converting kilovolts to microvolts");
-                Voltage::from_micro_volts(microvolts as i64)
+                Voltage::from_micro_volts(microvolts)
             }
         }
     };
