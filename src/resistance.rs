@@ -1,5 +1,5 @@
 use crate::assert_positive_float;
-use core::{cmp, ops};
+use core::{cmp, fmt, ops};
 
 /// Represents a resistance value, stored as whole milliohms (mΩ) stored in a `u64` value.
 /// This value can only be positive.
@@ -421,3 +421,16 @@ macro_rules! impl_resistance_from_float {
 
 impl_resistance_from_float!(f32);
 impl_resistance_from_float!(f64);
+
+impl fmt::Display for Resistance {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let (value, unit) = match self.raw {
+            0..=999 => (self.raw as f64, "mΩ"),
+            1_000..=999_999 => ((self.raw as f64) / 1_000f64, "Ω"),
+            1_000_000..=999_999_999 => ((self.raw as f64) / 1_000_000f64, "kΩ"),
+            _ => ((self.raw as f64) / 1_000_000_000f64, "MΩ"),
+        };
+
+        write!(f, "{value:.2}{unit}")
+    }
+}

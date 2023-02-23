@@ -1,5 +1,5 @@
 use crate::assert_positive_float;
-use core::{cmp, ops};
+use core::{cmp, fmt, ops};
 
 /// Represents a current value, stored as whole microamps (μA) stored in a `u64` value.
 /// This value can only be positive.
@@ -397,3 +397,15 @@ macro_rules! impl_current_from_float {
 
 impl_current_from_float!(f32);
 impl_current_from_float!(f64);
+
+impl fmt::Display for Current {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let (value, unit) = match self.raw {
+            0..=999 => (self.raw as f64, "μA"),
+            1_000..=999_999 => ((self.raw as f64) / 1_000f64, "mA"),
+            _ => ((self.raw as f64) / 1_000_000f64, "A"),
+        };
+
+        write!(f, "{value:.2}{unit}")
+    }
+}
