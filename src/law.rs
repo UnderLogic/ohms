@@ -1,4 +1,4 @@
-use crate::{Current, Resistance, Voltage};
+use crate::{Current, Power, Resistance, Voltage};
 use core::ops;
 
 impl ops::Div<Resistance> for Voltage {
@@ -85,6 +85,38 @@ impl ops::Div<Current> for Voltage {
     }
 }
 
+impl ops::Mul<Current> for Voltage {
+    type Output = Power;
+
+    /// Calculates the power dissipated by a resistive load given the voltage across it and the current.
+    ///
+    /// Will be rounded down to the nearest whole microwatt (μW).
+    fn mul(self, current: Current) -> Self::Output {
+        current * self
+    }
+}
+
+impl ops::Mul<Voltage> for Current {
+    type Output = Power;
+
+    /// Calculates the power dissipated by a resistive load given the voltage across it and the current.
+    ///
+    /// Will be rounded down to the nearest whole microwatt (μW).
+    fn mul(self, voltage: Voltage) -> Self::Output {
+        let micro_volts = voltage.micro_volts().unsigned_abs();
+        let micro_amps = self.micro_amps();
+        let pico_watts = micro_volts
+            .checked_mul(micro_amps)
+            .expect("Power would overflow");
+
+        let micro_watts = pico_watts
+            .checked_div(1_000_000u64)
+            .expect("Power would overflow");
+
+        Power::from_micro_watts(micro_watts)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -147,5 +179,33 @@ mod tests {
         let resistance = v / i;
 
         assert_eq!(resistance.milli_ohms(), expected_milli_ohms);
+    }
+
+    #[test_case(5_000_000, 1_000_000, 5_000_000; "positive 5V, 1A equals 5W")]
+    #[test_case(-5_000_000, 1_000_000, 5_000_000; "negative 5V, 1A equals 5W")]
+    fn test_power_equals_voltage_times_current(
+        micro_volts: i64,
+        micro_amps: u64,
+        expected_micro_watts: u64,
+    ) {
+        let v = Voltage::from_micro_volts(micro_volts);
+        let i = Current::from_micro_amps(micro_amps);
+        let power = v * i;
+
+        assert_eq!(power.micro_watts(), expected_micro_watts);
+    }
+
+    #[test_case(5_000_000, 1_000_000, 5_000_000; "positive 5V, 1A equals 5W")]
+    #[test_case(-5_000_000, 1_000_000, 5_000_000; "negative 5V, 1A equals 5W")]
+    fn test_power_equals_current_times_voltage(
+        micro_volts: i64,
+        micro_amps: u64,
+        expected_micro_watts: u64,
+    ) {
+        let v = Voltage::from_micro_volts(micro_volts);
+        let i = Current::from_micro_amps(micro_amps);
+        let power = i * v;
+
+        assert_eq!(power.micro_watts(), expected_micro_watts);
     }
 }

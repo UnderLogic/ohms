@@ -13,6 +13,7 @@ All units are stored internally as `u64` or `i64` in their base unit.
 - [Current](src/current.rs) (μA, mA, A)
 - [Resistance](src/resistance.rs) (mΩ, Ω, kΩ, MΩ)
 - [Voltage](src/voltage.rs) (μV, mV, V, kV)
+- [Power](src/power.rs) (μW, mW, W, kW)
 
 ## Extension Traits
 
@@ -36,6 +37,10 @@ The `Current`, `Resistance` and `Voltage` types follow the [Ohm's Law](https://e
 This means that you can use the `/` and `*` operators to calculate the missing value.
 For example, `Voltage / Current` will return a `Resistance` value.
 
+## Power Calculations
+
+The `Power` type supports calculating the power from multiplying `Voltage` and `Current` values.
+
 ## Installation
 
 You can add this crate via [crates.io](https://crates.io/ohms):
@@ -53,7 +58,10 @@ let voltage = 5.volts();
 let current = 1.milli_amps();
 let resistance = voltage / current;
 
+let power = voltage * current;
+
 assert_eq!(resistance.ohms(), 5000);
+assert_eq!(power.milli_watts(), 5000);
 ```
 
 ## Documentation

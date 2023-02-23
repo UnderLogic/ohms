@@ -4,9 +4,9 @@
 //! - Current (μA, mA, A)
 //! - Resistance (mΩ, Ω, kΩ, MΩ)
 //! - Voltage (μV, mV, V, kV)
+//! - Power (μW, mW, W, kW)
 //!
-//! Each unit type has a corresponding extension trait for creating values from `i32`/`u32` and `f32`
-//! values. The extension traits are named `ExtI32`, `ExtU32`, and `ExtF32` respectively.
+//! Each unit type has a corresponding extension trait for creating values from integer and floating point values.
 //!
 //! Unit types can easily be converted to and from different denominations.
 //!
@@ -52,12 +52,14 @@
 mod assert;
 mod current;
 mod law;
+mod power;
 pub mod prelude;
 mod resistance;
 mod voltage;
 
 pub use current::{Current, FromFloat as CurrentFromFloat, FromInteger as CurrentFromInteger};
 pub use law::*;
+pub use power::{FromFloat as PowerFromFloat, FromInteger as PowerFromInteger, Power};
 pub use resistance::{
     FromFloat as ResistanceFromFloat, FromInteger as ResistanceFromInteger, Resistance,
 };
